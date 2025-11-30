@@ -38,61 +38,61 @@ function getRatingStars(rating: number) {
 }
 ---
 
-<div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 group">
-  <div class="relative overflow-hidden rounded-t-lg">
+<div class="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 overflow-hidden">
+  <div class="relative overflow-hidden aspect-[4/3]">
     <img
       src={product.image}
       alt={product.title}
-      class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
       loading="lazy"
     />
+    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
     {product.discount && (
-      <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+      <div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-md">
         -{product.discount}
       </div>
     )}
   </div>
 
-  <div class="p-4">
-    <div class="mb-3">
-      <h3 class="font-semibold text-gray-900 text-lg mb-2 line-clamp-2 group-hover:text-blue-600 transition-colors">
-        <a href={product.url} class="hover:underline">
+  <div class="p-5">
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600">
+          {product.platform}
+        </span>
+        <div class="flex items-center space-x-1">
+          <Star class="w-3.5 h-3.5 text-yellow-400 fill-current" />
+          <span class="text-sm font-medium text-gray-900">{product.rating}</span>
+        </div>
+      </div>
+      
+      <h3 class="font-bold text-gray-900 text-lg leading-tight mb-1 line-clamp-2 group-hover:text-primary-600 transition-colors">
+        <a href={product.url}>
           {product.title}
         </a>
       </h3>
-
-      <div class="flex items-center space-x-2 text-sm">
-        <div class="flex items-center">
-          <Star class="w-4 h-4 text-yellow-400 fill-current" />
-          <span class="ml-1 text-gray-600">{product.rating}</span>
-        </div>
-        <span class="text-gray-400">•</span>
-        <span class="text-gray-500">{product.platform}</span>
-      </div>
     </div>
 
-    <div class="space-y-2">
-      <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-2">
-          <span class="text-gray-400 line-through text-sm">
-            ¥{formatPrice(product.originalPrice)}
-          </span>
-          <span class="text-2xl font-bold text-red-600">
-            ¥{formatPrice(product.currentPrice)}
-          </span>
-        </div>
+    <div class="space-y-4">
+      <div class="flex items-baseline space-x-2">
+        <span class="text-2xl font-bold text-primary-600">
+          ¥{formatPrice(product.currentPrice)}
+        </span>
+        <span class="text-sm text-gray-400 line-through">
+          ¥{formatPrice(product.originalPrice)}
+        </span>
       </div>
 
-      <div class="flex space-x-2">
+      <div class="grid grid-cols-2 gap-3">
         <a
           href={product.url}
-          class="flex-1 inline-flex items-center justify-center space-x-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+          class="btn btn-primary btn-sm w-full"
         >
-          <span>見る</span>
-          <ExternalLink class="w-4 h-4" />
+          <span>詳細を見る</span>
+          <ExternalLink class="w-3.5 h-3.5 ml-1.5" />
         </a>
-        <button class="px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
-          比較
+        <button class="btn btn-outline btn-sm w-full">
+          比較する
         </button>
       </div>
     </div>
