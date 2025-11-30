@@ -1,0 +1,166 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductCard from '../components/ui/ProductCard.astro';
+import { Search, TrendingUp, ShoppingBag, Star, ArrowRight } from 'lucide-react';
+
+const categories = [
+  { name: '家電', icon: '📱', count: '15,234' },
+  { name: 'ファッション', icon: '👕', count: '23,456' },
+  { name: '食品・飲料', icon: '🍱', count: '8,901' },
+  { name: '美容・コスメ', icon: '💄', count: '12,345' },
+  { name: '本・雑誌', icon: '📚', count: '5,678' },
+  { name: 'スポーツ・アウトドア', icon: '⚽', count: '9,012' },
+];
+
+const featuredDeals = [
+  {
+    id: '1',
+    title: 'iPhone 15 Pro',
+    originalPrice: '148,800',
+    currentPrice: '129,800',
+    discount: '13%',
+    platform: 'Amazon',
+    image: '/images/products/iphone-15-pro.jpg',
+    rating: 4.8,
+    url: '/products/1'
+  },
+  {
+    id: '2',
+    title: 'Sony WH-1000XM5',
+    originalPrice: '42,900',
+    currentPrice: '35,800',
+    discount: '17%',
+    platform: '楽天',
+    image: '/images/products/sony-headphones.jpg',
+    rating: 4.9,
+    url: '/products/2'
+  },
+  {
+    id: '3',
+    title: 'Nintendo Switch',
+    originalPrice: '32,978',
+    currentPrice: '29,800',
+    discount: '10%',
+    platform: 'Yahoo!ショッピング',
+    image: '/images/products/nintendo-switch.jpg',
+    rating: 4.7,
+    url: '/products/3'
+  }
+];
+---
+
+<BaseLayout title="Yabaii - 日本の価格比較アプリ" description="Amazon、楽天、Yahoo!ショッピングなど主要ECサイトの価格をリアルタイムで比較。お得な商品を見つけて、スマートに買い物をしましょう。">
+  <div class="container py-8">
+    {/* Hero Section */}
+    <section class="text-center py-12 px-4">
+      <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+        日本の<span class="text-blue-600">価格比較</span>アプリ
+      </h1>
+      <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        Amazon、楽天、Yahoo!ショッピングなど主要ECサイトの価格をリアルタイムで比較。
+        お得な商品を見つけて、スマートに買い物をしましょう。
+      </p>
+    </section>
+
+    {/* Features */}
+    <section class="py-12">
+      <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
+        なぜYabaiiが選ばれる？
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="text-center">
+          <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <TrendingUp class="w-8 h-8 text-blue-600" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">リアルタイム価格比較</h3>
+          <p class="text-gray-600">
+            5大主要ECサイトの価格を常に監視し、最新の価格情報を提供します。
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="bg-green-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ShoppingBag class="w-8 h-8 text-green-600" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">お得な情報</h3>
+          <p class="text-gray-600">
+            割引セールや割引クーポンを見逃さず、最高の買い物タイミングをお知らせします。
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="bg-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Star class="w-8 h-8 text-purple-600" />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">AIレビュー要約</h3>
+          <p class="text-gray-600">
+            多数のレビューをAIが分析し、重要なポイントを分かりやすくまとめます。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* Categories */}
+    <section class="py-12">
+      <h2 class="text-3xl font-bold text-center text-gray-900 mb-8">
+        人気カテゴリー
+      </h2>
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {categories.map((category) => (
+          <a
+            href={`/search?category=${encodeURIComponent(category.name)}`}
+            class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow text-center group"
+          >
+            <div class="text-3xl mb-2 group-hover:scale-110 transition-transform">{category.icon}</div>
+            <h3 class="font-semibold text-gray-900 mb-1">{category.name}</h3>
+            <p class="text-sm text-gray-500">{category.count}商品</p>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    {/* Featured Deals */}
+    <section class="py-12">
+      <div class="flex justify-between items-center mb-8">
+        <h2 class="text-3xl font-bold text-gray-900">
+          今週のお得な情報
+        </h2>
+        <a
+          href="/deals"
+          class="flex items-center space-x-2 text-blue-600 hover:text-blue-700 transition-colors"
+        >
+          <span>もっと見る</span>
+          <ArrowRight class="w-4 h-4" />
+        </a>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {featuredDeals.map((deal) => (
+          <ProductCard product={deal} />
+        ))}
+      </div>
+    </section>
+
+    {/* CTA */}
+    <section class="py-12 text-center bg-gray-50 rounded-2xl">
+      <h2 class="text-3xl font-bold text-gray-900 mb-4">
+        今すぐお得な買い物を始めよう
+      </h2>
+      <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+        無料で会員登録して、価格アラートやお得な情報をお受け取りください。
+      </p>
+      <div class="space-x-4">
+        <a
+          href="/compare"
+          class="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <span>今すぐ始める</span>
+          <ArrowRight class="w-4 h-4" />
+        </a>
+        <a
+          href="/deals"
+          class="inline-flex items-center space-x-2 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+        >
+          <span>お得な情報を見る</span>
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,3 +1,77 @@
-node_modules
-dist
+# OS and Editor files
 .DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Node.js
+node_modules/
+.npm
+.eslintcache
+
+# Build outputs
+dist/
+build/
+.astro/
+.vercel/
+
+# Cache
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Runtime
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output
+
+# Temporary files
+tmp/
+temp/
+*.tgz
+
+# Yarn
+.yarn-integrity
+
+# Local development
+.serverless/
+.fusebox/
+.dynamodb/
+.tern-port
+.yard/
+
+# Storybook
+.out
+.storybook-out/
+
+# Deployment specific
+.wrangler/
+wrangler.toml.local

@@ -1,34 +1,29 @@
 {
-  "name": "yabaii-workspace",
-  "version": "1.0.0",
-  "description": "Japanese Price Comparison App - Monorepo Workspace",
-  "private": true,
+  "name": "yabaii-astro",
   "type": "module",
+  "version": "0.0.1",
   "scripts": {
-    "dev:api": "cd api && npm run dev",
-    "dev:mobile": "cd apps/mobile && npm run start",
-    "build:api": "cd api && npm run build",
-    "build:mobile": "cd apps/mobile && npm run build:android",
-    "test:api": "cd api && npm test",
-    "test:mobile": "cd apps/mobile && npm test",
-    "lint:all": "biome lint .",
-    "format:all": "biome format --write .",
-    "type-check:api": "cd api && npm run type-check",
-    "type-check:mobile": "cd apps/mobile && npm run type-check",
-    "install:all": "bun install && cd apps/mobile && bun install && cd ../../api && bun install"
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test:deployment": "node scripts/test-deployment.js"
   },
-    "devDependencies": {
-    "@types/bun": "latest",
-    "typescript": "~5.9.2",
-    "biome": "^0.3.3"
-  },
-    "keywords": [
-    "price-comparison",
-    "japan",
-    "mobile-app",
-    "api",
-    "monorepo"
-  ],
-  "author": "Yabaii Team",
-  "license": "MIT"
+  "dependencies": {
+    "@astrojs/react": "^4.4.2",
+    "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/tailwind": "^6.0.2",
+    "@tanstack/react-query": "^5.90.11",
+    "@tanstack/react-query-devtools": "^5.91.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "astro": "^5.16.3",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.555.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^3.4.18",
+    "zustand": "^5.0.9"
+  }
 }

@@ -1,0 +1,265 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SearchBar from '../components/islands/SearchBar.jsx';
+import ProductCard from '../components/ui/ProductCard.astro';
+import { Plus, X, BarChart3 } from 'lucide-react';
+
+// Mock comparison data
+const comparisonItems = [
+  {
+    id: '1',
+    name: 'iPhone 15 Pro 256GB',
+    price: 148800,
+    originalPrice: 159800,
+    discount: 11000,
+    platform: 'Amazon',
+    rating: 4.8,
+    reviewCount: 2341,
+    image: '/images/products/iphone-15-pro.jpg',
+    url: '/products/1',
+    availability: 'in_stock',
+    features: ['A17 Proチップ', '5X光学ズーム', 'ナチュラルチタン'],
+    specifications: {
+      '画面サイズ': '6.1インチ',
+      'ストレージ': '256GB',
+      'カラー': 'ナチュラルチタン',
+      'カメラ': '48MP + 12MP + 12MP'
+    }
+  },
+  {
+    id: '2',
+    name: 'iPhone 15 Pro Max 256GB',
+    price: 178800,
+    originalPrice: 189800,
+    discount: 11000,
+    platform: '楽天',
+    rating: 4.9,
+    reviewCount: 1856,
+    image: '/images/products/iphone-15-pro-max.jpg',
+    url: '/products/2',
+    availability: 'in_stock',
+    features: ['A17 Proチップ', '5X光学ズーム', 'ナチュラルチタン'],
+    specifications: {
+      '画面サイズ': '6.7インチ',
+      'ストレージ': '256GB',
+      'カラー': 'ナチュラルチタン',
+      'カメラ': '48MP + 12MP + 12MP + 12MP'
+    }
+  }
+];
+---
+
+<BaseLayout
+  title="価格比較 - Yabaii"
+  description="製品を比較して最安値を見つけましょう。機能、価格、評価を徹底比較。"
+>
+  <div class="container py-8">
+    {/* Header */}
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-4">製品価格比較</h1>
+      <p class="text-gray-600 mb-6">
+        最大4つの製品を並べて比較。機能、価格、ユーザー評価を詳細に確認できます。
+      </p>
+
+      {/* Search Bar */}
+      <div class="max-w-2xl mb-6">
+        <SearchBar client:load placeholder="比較したい製品を検索..." />
+      </div>
+    </div>
+
+    {comparisonItems.length > 0 ? (
+      <>
+        {/* Comparison Controls */}
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold flex items-center space-x-2">
+              <BarChart3 class="w-5 h-5 text-blue-600" />
+              <span>比較項目 ({comparisonItems.length}/4)</span>
+            </h2>
+            <button class="text-sm text-red-600 hover:text-red-700">
+              すべてクリア
+            </button>
+          </div>
+
+          {/* Comparison Grid */}
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {comparisonItems.map((item, index) => (
+              <div class="relative bg-gray-50 rounded-lg p-4" key={item.id}>
+                <button
+                  class="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+                  aria-label={`${item.name}を比較から削除`}
+                >
+                  <X class="w-4 h-4" />
+                </button>
+
+                <div class="flex flex-col items-center text-center">
+                  <div class="w-20 h-20 bg-gray-200 rounded-lg mb-3"></div>
+                  <h3 class="font-semibold text-sm mb-1 line-clamp-2">{item.name}</h3>
+                  <div class="text-lg font-bold text-red-600">¥{item.price.toLocaleString()}</div>
+                  <div class="flex items-center space-x-1 text-xs text-gray-500">
+                    <span>★{item.rating}</span>
+                    <span>({item.reviewCount})</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Add Product Button */}
+            {comparisonItems.length < 4 && (
+              <div class="flex items-center justify-center bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 min-h-[180px]">
+                <button class="flex flex-col items-center text-gray-500 hover:text-gray-700 p-4">
+                  <Plus class="w-8 h-8 mb-2" />
+                  <span class="text-sm">製品を追加</span>
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Detailed Comparison */}
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full">
+              <thead class="bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th class="text-left p-4 font-semibold text-gray-900 w-48">比較項目</th>
+                  {comparisonItems.map((item) => (
+                    <th key={item.id} class="text-center p-4 font-semibold text-gray-900 min-w-[200px]">
+                      {item.name}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200">
+                {/* Price Row */}
+                <tr class="hover:bg-gray-50">
+                  <td class="p-4 font-medium text-gray-900">価格</td>
+                  {comparisonItems.map((item) => (
+                    <td key={item.id} class="p-4 text-center">
+                      <div class="text-2xl font-bold text-red-600">¥{item.price.toLocaleString()}</div>
+                      {item.originalPrice && (
+                        <div class="text-sm text-gray-400 line-through">
+                          ¥{item.originalPrice.toLocaleString()}
+                        </div>
+                      )}
+                      <div class="text-xs text-green-600 font-semibold">
+                        ¥{item.discount.toLocaleString()} OFF
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Rating Row */}
+                <tr class="hover:bg-gray-50">
+                  <td class="p-4 font-medium text-gray-900">ユーザー評価</td>
+                  {comparisonItems.map((item) => (
+                    <td key={item.id} class="p-4 text-center">
+                      <div class="flex items-center justify-center space-x-1 mb-1">
+                        <span class="text-yellow-400">★★★★★</span>
+                        <span class="text-gray-900 font-semibold">{item.rating}</span>
+                      </div>
+                      <div class="text-sm text-gray-500">
+                        {item.reviewCount.toLocaleString()}件のレビュー
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Platform Row */}
+                <tr class="hover:bg-gray-50">
+                  <td class="p-4 font-medium text-gray-900">販売店</td>
+                  {comparisonItems.map((item) => (
+                    <td key={item.id} class="p-4 text-center">
+                      <div class="bg-blue-100 text-blue-800 text-sm font-medium px-2 py-1 rounded">
+                        {item.platform}
+                      </div>
+                      <div class="text-xs text-gray-500 mt-1">
+                        {item.availability === 'in_stock' ? '在庫あり' : '在庫切れ'}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Features Row */}
+                <tr class="hover:bg-gray-50">
+                  <td class="p-4 font-medium text-gray-900">主な特徴</td>
+                  {comparisonItems.map((item) => (
+                    <td key={item.id} class="p-4">
+                      <ul class="space-y-1">
+                        {item.features?.map((feature, idx) => (
+                          <li key={idx} class="text-sm text-gray-600 flex items-center">
+                            <span class="w-1 h-1 bg-blue-600 rounded-full mr-2"></span>
+                            {feature}
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  ))}
+                </tr>
+
+                {/* Specifications Rows */}
+                {Object.entries(comparisonItems[0]?.specifications || {}).map(([spec, value]) => (
+                  <tr key={spec} class="hover:bg-gray-50">
+                    <td class="p-4 font-medium text-gray-900">{spec}</td>
+                    {comparisonItems.map((item) => (
+                      <td key={item.id} class="p-4 text-center text-gray-700">
+                        {item.specifications?.[spec] || '-'}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+
+                {/* Action Row */}
+                <tr class="bg-gray-50">
+                  <td class="p-4 font-medium text-gray-900">アクション</td>
+                  {comparisonItems.map((item) => (
+                    <td key={item.id} class="p-4 text-center">
+                      <a
+                        href={item.url}
+                        class="inline-block w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                      >
+                        詳細を見る
+                      </a>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Save Comparison */}
+        <div class="mt-8 flex justify-center">
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl w-full">
+            <h3 class="text-lg font-semibold text-blue-900 mb-2">比較結果を保存</h3>
+            <p class="text-blue-700 mb-4">
+              この比較結果を保存して後で確認できます。ログインして比較リストに追加しましょう。
+            </p>
+            <div class="flex space-x-4">
+              <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
+                ログインして保存
+              </button>
+              <button class="px-4 py-2 border border-blue-600 text-blue-600 rounded-md hover:bg-blue-50 transition-colors">
+                URLをコピー
+              </button>
+            </div>
+          </div>
+        </div>
+      </>
+    ) : (
+      /* Empty State */
+      <div class="text-center py-16">
+        <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <BarChart3 class="w-12 h-12 text-gray-400" />
+        </div>
+        <h2 class="text-2xl font-semibold text-gray-900 mb-4">比較する製品を追加</h2>
+        <p class="text-gray-600 mb-8 max-w-2xl mx-auto">
+          上の検索バーで製品を検索して比較リストに追加してください。最大4つの製品を同時に比較できます。
+        </p>
+        <div class="max-w-md mx-auto">
+          <SearchBar client:load placeholder="製品名で検索..." />
+        </div>
+      </div>
+    )}
+  </div>
+</BaseLayout>
