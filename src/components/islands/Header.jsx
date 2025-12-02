@@ -10,7 +10,6 @@ import {
     Link,
     Button,
 } from '@heroui/react';
-import ThemeToggle from './ThemeToggle';
 import SearchBar from './SearchBar';
 
 export default function Header() {
@@ -26,7 +25,7 @@ export default function Header() {
         <Navbar
             onMenuOpenChange={setIsMenuOpen}
             maxWidth="xl"
-            className="fixed top-0 w-full z-50 backdrop-blur-lg bg-white/70 dark:bg-gray-900/70 border-b border-gray-200 dark:border-gray-800"
+            className="fixed top-0 w-full z-50 backdrop-blur-lg bg-white/70 border-b border-gray-200"
             classNames={{
                 wrapper: "px-4 sm:px-6",
             }}
@@ -44,7 +43,7 @@ export default function Header() {
                                 <path d="M10 12a2 2 0 100 4 2 2 0 000-4z" />
                             </svg>
                         </div>
-                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300">
+                        <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-600">
                             Yabaii
                         </span>
                     </Link>
@@ -60,15 +59,12 @@ export default function Header() {
                     <NavbarItem key={item.name}>
                         <Link
                             href={item.href}
-                            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary-400"
+                            className="text-sm font-medium text-gray-600 hover:text-primary"
                         >
                             {item.name}
                         </Link>
                     </NavbarItem>
                 ))}
-                <NavbarItem>
-                    <ThemeToggle />
-                </NavbarItem>
                 <NavbarItem>
                     <Button as={Link} href="/login" variant="light" size="sm">
                         ログイン
@@ -96,12 +92,6 @@ export default function Header() {
                         </Link>
                     </NavbarMenuItem>
                 ))}
-                <NavbarMenuItem>
-                    <div className="flex items-center justify-between w-full pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <span className="text-sm text-gray-600 dark:text-gray-400">テーマ</span>
-                        <ThemeToggle />
-                    </div>
-                </NavbarMenuItem>
                 <NavbarMenuItem>
                     <Button as={Link} href="/login" variant="light" className="w-full" size="lg">
                         ログイン

@@ -6,7 +6,6 @@ export default {
     "./src/**/*.{astro,html,js,ts,jsx,tsx}",
     "./node_modules/@heroui/theme/dist/**/*.{js,ts,jsx,tsx}",
   ],
-  darkMode: 'class',
   theme: {
     extend: {},
   },
@@ -23,19 +22,6 @@ export default {
             foreground: "#ffffff",
           },
           focus: "#6366f1",
-        },
-      },
-      dark: {
-        colors: {
-          primary: {
-            DEFAULT: "#818cf8",
-            foreground: "#ffffff",
-          },
-          secondary: {
-            DEFAULT: "#f472b6",
-            foreground: "#ffffff",
-          },
-          focus: "#818cf8",
         },
       },
     },
