@@ -36,7 +36,7 @@ describe("rate-limiter", () => {
         maxRequests: 3,
       };
 
-      // 发送 3 次请求
+      // 发送 3 次request
       checkRateLimit("test-key-2", config);
       checkRateLimit("test-key-2", config);
       checkRateLimit("test-key-2", config);
@@ -64,7 +64,7 @@ describe("rate-limiter", () => {
       // 时间推进超过窗口期
       vi.advanceTimersByTime(61000);
 
-      // 应该可以再次请求
+      // 应该可以再次request
       const allowedResult = checkRateLimit("test-key-3", config);
       expect(allowedResult.limited).toBe(false);
       expect(allowedResult.remaining).toBe(1);
@@ -86,7 +86,7 @@ describe("rate-limiter", () => {
     it("should use default config when not provided", () => {
       const result = checkRateLimit("test-default");
 
-      expect(result.limit).toBe(60); // 默认 60 次/分钟
+      expect(result.limit).toBe(60); // 默认 60 次/minutes
       expect(result.limited).toBe(false);
     });
   });

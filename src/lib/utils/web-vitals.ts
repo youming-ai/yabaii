@@ -1,18 +1,8 @@
-/**
- * Web Vitals 性能监控模块
- *
- * 提供核心 Web Vitals 指标的收集和报告：
- * - LCP (Largest Contentful Paint): 最大内容绘制
- * - FID (First Input Delay): 首次输入延迟
- * - CLS (Cumulative Layout Shift): 累计布局偏移
- * - FCP (First Contentful Paint): 首次内容绘制
- * - TTFB (Time to First Byte): 首字节时间
- * - INP (Interaction to Next Paint): 交互到下一次绘制
- */
+/** * Web Vitals 性能监控模块 * * 提供core Web Vitals 指标收集和报告： * - LCP (Largest Contentful Paint): 最大内容绘制 * - FID (First Input Delay): 首次输入delay * - CLS (Cumulative Layout Shift): 累计布局偏移 * - FCP (First Contentful Paint): 首次内容绘制 * - TTFB (Time to First Byte): 首字节时间 * - INP (Interaction to Next Paint): 交互To下一次绘制*/
 
 import { getMonitoringService } from "./monitoring-service";
 
-// Web Vitals 指标类型
+// Web Vitals 指标class型
 export interface WebVitalsMetric {
   name: "LCP" | "FID" | "CLS" | "FCP" | "TTFB" | "INP";
   value: number;
@@ -32,7 +22,7 @@ const THRESHOLDS = {
   INP: { good: 200, poor: 500 },
 };
 
-// 获取指标评级
+// Get指标评级
 function getRating(
   name: keyof typeof THRESHOLDS,
   value: number,
@@ -48,7 +38,7 @@ function generateId(): string {
   return `v${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
 
-// 报告指标到监控服务
+// 报告指标To监控服务
 function reportMetric(metric: WebVitalsMetric): void {
   const monitoring = getMonitoringService();
   monitoring.logCustomEvent("web-vitals", metric.name, {
@@ -59,7 +49,7 @@ function reportMetric(metric: WebVitalsMetric): void {
     navigationType: metric.navigationType,
   });
 
-  // 开发环境下打印到控制台
+  // 开发环境下打印To控制台
   if (process.env.NODE_ENV === "development") {
     const color =
       metric.rating === "good"
@@ -159,7 +149,7 @@ function observeCLS(): void {
           value: number;
         };
 
-        // 只计算没有用户输入的布局偏移
+        // 只计算没有用户输入布局偏移
         if (!layoutShiftEntry.hadRecentInput) {
           const firstSessionEntry = sessionEntries[0] as
             | (PerformanceEntry & { startTime: number })
@@ -168,7 +158,7 @@ function observeCLS(): void {
             | (PerformanceEntry & { startTime: number })
             | undefined;
 
-          // 如果间隔超过 1 秒或总时间超过 5 秒，开始新的会话
+          // If间隔超过 1 seconds或总时间超过 5 seconds，开始新会话
           if (
             sessionValue &&
             (entry.startTime - (lastSessionEntry?.startTime || 0) > 1000 ||
@@ -278,7 +268,7 @@ function observeINP(): void {
         const eventEntry = entry as PerformanceEventTiming;
         const duration = eventEntry.duration;
 
-        // 只记录有意义的交互
+        // 只record有意义交互
         if (duration > 0) {
           interactions.push(duration);
           maxINP = Math.max(maxINP, duration);
@@ -316,7 +306,7 @@ function observeINP(): void {
   }
 }
 
-// 获取导航类型
+// Get导航class型
 function getNavigationType(): string {
   if (typeof performance === "undefined") return "unknown";
 
@@ -329,10 +319,7 @@ function getNavigationType(): string {
   return "unknown";
 }
 
-/**
- * 初始化 Web Vitals 监控
- * 应在页面加载后调用
- */
+/** * 初始化 Web Vitals 监控 * 应在页面加载后调用*/
 export function initWebVitals(): void {
   if (typeof window === "undefined") return;
 
@@ -353,9 +340,7 @@ export function initWebVitals(): void {
   }
 }
 
-/**
- * 手动报告自定义性能指标
- */
+/** * 手动报告自定义性能指标*/
 export function reportCustomMetric(
   name: string,
   value: number,
@@ -369,9 +354,7 @@ export function reportCustomMetric(
   });
 }
 
-/**
- * 测量函数执行时间
- */
+/** * 测量函数执行时间*/
 export async function measureAsync<T>(
   name: string,
   fn: () => Promise<T>,
@@ -394,9 +377,7 @@ export async function measureAsync<T>(
   }
 }
 
-/**
- * 测量同步函数执行时间
- */
+/** * 测量同步函数执行时间*/
 export function measureSync<T>(name: string, fn: () => T, metadata?: Record<string, unknown>): T {
   const start = performance.now();
   try {

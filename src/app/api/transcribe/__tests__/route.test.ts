@@ -23,10 +23,10 @@ import { POST } from "../route";
 describe("POST /api/transcribe", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // 设置环境变量
+    // Set环境变量
     process.env.GROQ_API_KEY = "test-api-key";
 
-    // 设置默认 mock 返回值
+    // Set默认 mock 返回值
     mockCreate.mockResolvedValue({
       text: "Test transcription text",
       language: "en",
@@ -74,7 +74,7 @@ describe("POST /api/transcribe", () => {
     expect(json.error.message).toContain("Audio file is required");
   });
 
-  // Note: The following tests require proper Groq SDK mocking which is complex
+  // Note: The following tests require proper Groq SDK mocking which i complex
   // due to module loading order. These tests are skipped for now but can be
   // enabled with proper E2E testing setup or more sophisticated mocking.
   it.skip("should successfully transcribe audio file", async () => {
@@ -132,7 +132,7 @@ describe("POST /api/transcribe", () => {
   });
 
   it("should return 500 when API key is missing", async () => {
-    // 删除 API key
+    // Delete API key
     delete process.env.GROQ_API_KEY;
 
     const formData = new FormData();

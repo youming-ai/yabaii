@@ -41,9 +41,7 @@ interface State {
   lastErrorTime: number;
 }
 
-/**
- * 错误边界组件 - 捕获子组件中的错误并显示友好的错误信息
- */
+/** * Error边界component - 捕获子componentinError并显示友好Error信息*/
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
     super(props);
@@ -57,7 +55,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
-    // 更新 state 使下一次渲染能够显示降级后的 UI
+    // Update state 使下一次渲染能够显示降级后 UI
     return {
       hasError: true,
       error,
@@ -65,23 +63,23 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // 检查错误频率限制
+    // CheckError频率限制
     const now = Date.now();
     const timeSinceLastError = now - this.state.lastErrorTime;
     const maxErrors = this.props.maxErrors || 10;
 
-    // 如果在5秒内错误次数超过限制，忽略后续错误
+    // If在5seconds内Error次数超过限制，忽略后续Error
     if (timeSinceLastError < 5000 && this.state.errorCount >= maxErrors) {
       return;
     }
 
-    // 记录错误
+    // recordError
     handleError(error, `ErrorBoundary.${this.getDisplayName()}`);
 
-    // 调用外部错误处理器
+    // 调用外部Errorprocessors
     this.props.onError?.(error, errorInfo);
 
-    // 更新 state
+    // Update state
     this.setState((prevState) => ({
       error,
       errorInfo,
@@ -90,12 +88,12 @@ export class ErrorBoundary extends Component<Props, State> {
     }));
   }
 
-  // 获取组件显示名称
+  // Getcomponent显示name
   private getDisplayName(): string {
     return "ErrorBoundary";
   }
 
-  // 复制错误信息到剪贴板
+  // 复制Error信息To剪贴板
   private async copyErrorToClipboard(): Promise<void> {
     try {
       const errorInfo = {
@@ -114,7 +112,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
-  // 导出错误日志
+  // 导出Error日志
   private exportErrorLogs(): void {
     const logs = getLocalErrorLogs();
     const dataStr = JSON.stringify(logs, null, 2);
@@ -144,7 +142,7 @@ export class ErrorBoundary extends Component<Props, State> {
     window.location.reload();
   };
 
-  // 获取错误详情组件
+  // GetError详情component
   private renderErrorDetails(): ReactNode {
     const { showDetails = true } = this.props;
     const { error, errorInfo } = this.state;
@@ -192,7 +190,7 @@ export class ErrorBoundary extends Component<Props, State> {
     );
   }
 
-  // 获取错误操作按钮
+  // GetErroroperations按钮
   private renderErrorActions(): ReactNode {
     const { allowReset = true, allowReport = true } = this.props;
 
@@ -256,12 +254,12 @@ export class ErrorBoundary extends Component<Props, State> {
     const { hasError, errorCount } = this.state;
 
     if (hasError) {
-      // 如果提供了自定义的 fallback，则使用它
+      // If提供了自定义 fallback，则使用它
       if (fallback) {
         return fallback;
       }
 
-      // 默认的错误 UI
+      // 默认Error UI
       return (
         <div className="flex min-h-screen items-center justify-center bg-background p-4">
           <Card className="w-full max-w-2xl shadow-lg">
@@ -316,15 +314,13 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-/**
- * 页面级错误边界 - 包装整个页面
- */
+/** * 页面级Error边界 - 包装整个页面*/
 export function PageErrorBoundary({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary
       fallbackMessage="页面出现错误，请尝试刷新页面"
       onError={(_error, _errorInfo) => {
-        // 这里可以集成错误监控服务
+        // 这里可以集成Error监控服务
         // console.error('Page error:', error, errorInfo);
       }}
     >
@@ -333,9 +329,7 @@ export function PageErrorBoundary({ children }: { children: ReactNode }) {
   );
 }
 
-/**
- * 组件级错误边界 - 包装特定组件
- */
+/** * component级Error边界 - 包装特定component*/
 export function ComponentErrorBoundary({
   children,
   fallback,
@@ -357,9 +351,7 @@ export function ComponentErrorBoundary({
   );
 }
 
-/**
- * 轻量级错误边界 - 用于小型组件
- */
+/** * 轻量级Error边界 - Used for小型component*/
 export function LightErrorBoundary({
   children,
   fallback,
@@ -386,9 +378,7 @@ export function LightErrorBoundary({
   );
 }
 
-/**
- * API 错误边界 - 用于API操作相关的组件
- */
+/** * API Error边界 - Used forAPIoperations相关component*/
 export function ApiErrorBoundary({
   children,
   fallbackMessage = "网络请求失败，请检查网络连接后重试",
@@ -408,9 +398,7 @@ export function ApiErrorBoundary({
   );
 }
 
-/**
- * 高阶组件 - 为组件添加错误边界
- */
+/** * 高阶component - ascomponentAddError边界*/
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
   options: {

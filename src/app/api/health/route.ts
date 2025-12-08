@@ -1,10 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { apiSuccess } from "@/lib/utils/api-response";
+import { apiLogger } from "@/lib/utils/logger";
 
-/**
- * Cloudflare Workers 健康检查 API
- * 用于监控系统运行状态和依赖服务
- */
+/** * Cloudflare Workers 健康Check API * Used for监控系统运行state和依赖服务*/
 type FeatureFlagMap = Record<string, boolean>;
 
 interface HealthConfiguration {
@@ -98,7 +96,7 @@ export async function GET(_request: NextRequest) {
   try {
     const startTime = Date.now();
 
-    // 检查基本信息
+    // Check基本信息
     const healthData: HealthData = {
       status: "healthy",
       timestamp: new Date().toISOString(),
@@ -108,7 +106,7 @@ export async function GET(_request: NextRequest) {
       opennext: true,
       version: process.env.npm_package_version || "1.0.0",
 
-      // 依赖服务检查
+      // 依赖服务Check
       services: {
         groq: {
           available: !!process.env.GROQ_API_KEY,
@@ -142,7 +140,7 @@ export async function GET(_request: NextRequest) {
             },
       },
 
-      // 功能支持检查
+      // functionality支持Check
       features: {
         serverSideRendering: true,
         apiRoutes: true,
@@ -163,14 +161,14 @@ export async function GET(_request: NextRequest) {
       },
     };
 
-    // 检查关键依赖
+    // Check关键依赖
     const criticalServices: (keyof HealthData["services"])[] = ["groq"];
     const unavailableServices = criticalServices.filter(
       (service) => !healthData.services[service].available,
     );
 
     if (unavailableServices.length > 0) {
-      healthData.status = "unhealthy"; // 修复类型错误
+      healthData.status = "unhealthy"; // 修复class型Error
       healthData.issues = [`Missing critical services: ${unavailableServices.join(", ")}`];
     }
 
@@ -179,10 +177,10 @@ export async function GET(_request: NextRequest) {
       healthData.performance.responseTime = responseTime;
     }
 
-    // 根据健康状态确定状态码
+    // 根据健康state确定state码
     const statusCode = healthData.status === "healthy" ? 200 : 503;
 
-    // 使用 NextResponse.json 直接创建响应，避免只读属性问题
+    // 使用 NextResponse.json 直接创建response，避免只读property问题
     const response = NextResponse.json(
       {
         success: true,
@@ -202,7 +200,7 @@ export async function GET(_request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error("❌ Health check failed:", error);
+    apiLogger.error("Health check failed:", error instanceof Error ? error.message : error);
 
     return NextResponse.json(
       {
@@ -224,9 +222,7 @@ export async function GET(_request: NextRequest) {
   }
 }
 
-/**
- * 详细健康检查 - 包含更多诊断信息
- */
+/** * 详细健康Check - 包含更多诊断信息*/
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
@@ -246,7 +242,7 @@ export async function POST(request: NextRequest) {
       version: "1.0.0",
       detailed: true,
 
-      // 基本服务状态
+      // 基本服务state
       services: {
         groq: {
           available: true,
@@ -290,7 +286,7 @@ export async function POST(request: NextRequest) {
         opennext: "1.11.0",
       },
 
-      // 配置检查
+      // 配置Check
       configuration: {
         features: {
           imageOptimization: true,
@@ -308,14 +304,14 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // 如果要求测试连接
+    // If要求测试connection
     if (testConnections) {
       const connections: HealthConnections = {
         timestamp: new Date().toISOString(),
         tests: {},
       };
 
-      // 测试 KV 连接
+      // 测试 KV connection
       try {
         const kvTest: ConnectionTestResult = { success: true, latency: 0 };
         connections.tests.kv = kvTest;
@@ -326,7 +322,7 @@ export async function POST(request: NextRequest) {
         };
       }
 
-      // 测试 D1 连接
+      // 测试 D1 connection
       try {
         const d1Test: ConnectionTestResult = { success: true, latency: 0 };
         connections.tests.d1 = d1Test;
@@ -342,14 +338,17 @@ export async function POST(request: NextRequest) {
 
     const response = apiSuccess(healthData);
 
-    // 添加详细的健康检查响应头
+    // Add详细健康Checkresponse头
     response.headers.set("Cache-Control", "no-cache, no-store, must-revalidate");
     response.headers.set("X-Health-Check", "OpenNext.js-Detailed");
     response.headers.set("X-Platform", "cloudflare-workers");
 
     return response;
   } catch (error) {
-    console.error("❌ Detailed health check failed:", error);
+    apiLogger.error(
+      "Detailed health check failed:",
+      error instanceof Error ? error.message : error,
+    );
 
     return NextResponse.json(
       {

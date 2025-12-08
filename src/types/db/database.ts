@@ -1,11 +1,9 @@
-/**
- * 统一的文件状态枚举
- */
+/** * 统一Filestate枚举*/
 export enum FileStatus {
-  UPLOADED = "uploaded", // 已上传，待转录
-  TRANSCRIBING = "transcribing", // 转录中
-  COMPLETED = "completed", // 转录完成
-  ERROR = "error", // 转录失败
+  UPLOADED = "uploaded", // 已upload，待Transcription
+  TRANSCRIBING = "transcribing", // Transcriptionin
+  COMPLETED = "completed", // Transcription完成
+  ERROR = "error", // TranscriptionFailed
 }
 
 export interface FileRow {
@@ -13,15 +11,14 @@ export interface FileRow {
   name: string;
   size: number;
   type: string;
-  blob?: Blob; // 对于大文件，此字段可能为空
-  isChunked?: boolean; // 是否使用分块存储
-  chunkSize?: number; // 每个分块的大小
+  blob?: Blob; // 对于大File，此field可能a空
+  isChunked?: boolean; // i否使用分块存储
+  chunkSize?: number; // 每个分块size
   totalChunks?: number; // 总分块数
   duration?: number;
-  uploadedAt: Date; // 与数据库 schema 保持一致
+  uploadedAt: Date; // 与database schema 保持一致
   updatedAt: Date;
-  // 统一文件状态字段
-  status?: FileStatus;
+  // 注意: state完全由 TranscriptRow.status 管理，不再存储在 FileRow
 }
 
 export interface TranscriptRow {

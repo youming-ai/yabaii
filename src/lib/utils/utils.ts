@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]): string {
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
 
-  // 对于小于 1KB 的文件，直接显示字节数
+  // 对于小于 1KB File，直接显示字节数
   if (bytes < 1024) {
     return `${bytes} B`;
   }
@@ -23,7 +23,7 @@ export function formatFileSize(bytes: number): string {
 export function formatDate(date: Date | string | number): string {
   const d = new Date(date);
 
-  // 检查日期是否有效
+  // Check日期i否有效
   if (Number.isNaN(d.getTime())) {
     return "无效日期";
   }
@@ -77,9 +77,7 @@ export function formatDuration(seconds: number): string {
   return `${minutes}m ${remainingSeconds}s`;
 }
 
-/**
- * Formats time for WebVTT format (HH:MM:SS.mmm)
- */
+/** * Formats time for WebVTT format (HH:MM:SS.mmm)*/
 export function formatTimeForVtt(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -89,9 +87,7 @@ export function formatTimeForVtt(seconds: number): string {
   return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}.${milliseconds.toString().padStart(3, "0")}`;
 }
 
-/**
- * Generates WebVTT caption content from subtitle segments
- */
+/** * Generates WebVTT caption content from subtitle segments*/
 export function generateWebVttFromSegments(
   segments: Array<{ start: number; end: number; text: string }>,
 ): string {
@@ -113,9 +109,7 @@ export function generateWebVttFromSegments(
   return vttContent;
 }
 
-/**
- * Creates a Blob URL for WebVTT content
- */
+/** * Creates a Blob URL for WebVTT content*/
 export function createWebVttBlobUrl(vttContent: string): string {
   if (!vttContent) {
     return "";

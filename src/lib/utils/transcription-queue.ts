@@ -1,7 +1,4 @@
-/**
- * 转录队列管理
- * 提供并发控制和取消功能
- */
+/** * Transcription队列管理 * 提供并发控制和取消functionality*/
 
 import type { TranscriptionLanguageCode } from "@/components/layout/contexts/TranscriptionLanguageContext";
 
@@ -25,10 +22,7 @@ type StatusChangeCallback = (
   error?: string,
 ) => void;
 
-/**
- * 转录队列管理器
- * 控制并发数量，支持取消操作
- */
+/** * Transcription队列管理器 * 控制并发数量，支持取消operations*/
 export class TranscriptionQueue {
   private queue: TranscriptionTask[] = [];
   private processing: Map<number, TranscriptionTask> = new Map();
@@ -40,25 +34,19 @@ export class TranscriptionQueue {
     this.config = config;
   }
 
-  /**
-   * 设置任务执行回调
-   */
+  /** * Set任务执行回调*/
   setTaskCallback(callback: TaskCallback): void {
     this.taskCallback = callback;
   }
 
-  /**
-   * 设置状态变更回调
-   */
+  /** * Setstate变更回调*/
   setStatusChangeCallback(callback: StatusChangeCallback): void {
     this.statusChangeCallback = callback;
   }
 
-  /**
-   * 添加任务到队列
-   */
+  /** * Add任务To队列*/
   add(fileId: number, language: TranscriptionLanguageCode): AbortController {
-    // 如果已经在队列或处理中，返回现有的 controller
+    // If已经在队列或Processin，返回现有 controller
     const existing = this.queue.find((t) => t.fileId === fileId) || this.processing.get(fileId);
     if (existing) {
       return existing.abortController;
@@ -76,17 +64,15 @@ export class TranscriptionQueue {
     this.queue.push(task);
     this.notifyStatusChange(fileId, "pending");
 
-    // 尝试处理队列
+    // 尝试Process队列
     this.processNext();
 
     return abortController;
   }
 
-  /**
-   * 取消特定任务
-   */
+  /** * 取消特定任务*/
   cancel(fileId: number): boolean {
-    // 检查是否在队列中
+    // Checkis否在队列in
     const queueIndex = this.queue.findIndex((t) => t.fileId === fileId);
     if (queueIndex !== -1) {
       const task = this.queue[queueIndex];
@@ -97,14 +83,14 @@ export class TranscriptionQueue {
       return true;
     }
 
-    // 检查是否正在处理
+    // Checkis否正在Process
     const processingTask = this.processing.get(fileId);
     if (processingTask) {
       processingTask.abortController.abort();
       processingTask.status = "cancelled";
       this.processing.delete(fileId);
       this.notifyStatusChange(fileId, "cancelled");
-      // 继续处理下一个任务
+      // 继续Process下一个任务
       this.processNext();
       return true;
     }
@@ -112,11 +98,9 @@ export class TranscriptionQueue {
     return false;
   }
 
-  /**
-   * 取消所有任务
-   */
+  /** * 取消所有任务*/
   cancelAll(): void {
-    // 取消队列中的任务
+    // 取消队列in任务
     for (const task of this.queue) {
       task.abortController.abort();
       task.status = "cancelled";
@@ -124,7 +108,7 @@ export class TranscriptionQueue {
     }
     this.queue = [];
 
-    // 取消处理中的任务
+    // 取消Processin任务
     for (const [fileId, task] of this.processing) {
       task.abortController.abort();
       task.status = "cancelled";
@@ -133,63 +117,51 @@ export class TranscriptionQueue {
     this.processing.clear();
   }
 
-  /**
-   * 检查任务是否在处理中
-   */
+  /** * Check任务i否在Processin*/
   isProcessing(fileId: number): boolean {
     return this.processing.has(fileId);
   }
 
-  /**
-   * 检查任务是否在队列中（包括处理中）
-   */
+  /** * Check任务i否在队列in（包括Processin）*/
   isInQueue(fileId: number): boolean {
     return this.queue.some((t) => t.fileId === fileId) || this.processing.has(fileId);
   }
 
-  /**
-   * 获取队列长度
-   */
+  /** * Get队列长度*/
   get length(): number {
     return this.queue.length + this.processing.size;
   }
 
-  /**
-   * 获取等待中的任务数
-   */
+  /** * Get等待in任务数*/
   get pendingCount(): number {
     return this.queue.length;
   }
 
-  /**
-   * 获取处理中的任务数
-   */
+  /** * GetProcessin任务数*/
   get processingCount(): number {
     return this.processing.size;
   }
 
-  /**
-   * 处理下一个任务
-   */
+  /** * Process下一个任务*/
   private async processNext(): Promise<void> {
-    // 检查是否可以处理更多任务
+    // Checkis否可以Process更多任务
     if (this.processing.size >= this.config.maxConcurrent) {
       return;
     }
 
-    // 获取下一个待处理任务
+    // Get下一个待Process任务
     const task = this.queue.shift();
     if (!task) {
       return;
     }
 
-    // 检查是否已被取消
+    // Checkis否已被取消
     if (task.abortController.signal.aborted) {
       this.processNext();
       return;
     }
 
-    // 标记为处理中
+    // 标记asProcessin
     task.status = "processing";
     this.processing.set(task.fileId, task);
     this.notifyStatusChange(task.fileId, "processing");
@@ -199,13 +171,13 @@ export class TranscriptionQueue {
         await this.taskCallback(task);
       }
 
-      // 只有在未被取消的情况下才标记完成
+      // 只有在未被取消情况下才标记完成
       if (!task.abortController.signal.aborted) {
         task.status = "completed";
         this.notifyStatusChange(task.fileId, "completed");
       }
     } catch (error) {
-      // 检查是否是取消错误
+      // Checkis否i取消Error
       if (error instanceof DOMException && error.name === "AbortError") {
         task.status = "cancelled";
         this.notifyStatusChange(task.fileId, "cancelled");
@@ -216,14 +188,12 @@ export class TranscriptionQueue {
       }
     } finally {
       this.processing.delete(task.fileId);
-      // 继续处理下一个任务
+      // 继续Process下一个任务
       this.processNext();
     }
   }
 
-  /**
-   * 通知状态变更
-   */
+  /** * 通知state变更*/
   private notifyStatusChange(
     fileId: number,
     status: TranscriptionTask["status"],
@@ -238,9 +208,7 @@ export class TranscriptionQueue {
 // 全局队列实例
 let globalQueue: TranscriptionQueue | null = null;
 
-/**
- * 获取全局转录队列
- */
+/** * Get全局Transcription队列*/
 export function getTranscriptionQueue(): TranscriptionQueue {
   if (!globalQueue) {
     globalQueue = new TranscriptionQueue({ maxConcurrent: 1 });

@@ -1,7 +1,4 @@
-/**
- * Furigana 处理模块
- * 支持多种 Furigana 数据格式和渲染方式
- */
+/** * Furigana Process模块 * 支持多种 Furigana 数据格式和渲染方式*/
 
 export interface FuriganaToken {
   text: string;
@@ -20,7 +17,7 @@ export interface ParsedFurigana {
   hasFurigana: boolean;
 }
 
-// 支持的 Furigana 格式类型
+// 支持 Furigana 格式class型
 export type FuriganaFormat =
   | "json" // JSON 格式: {"日本語":"にほんご","学習":"がくしゅう"}
   | "ruby" // Ruby 标签格式: <ruby>日本語<rt>にほんご</rt></ruby>
@@ -29,9 +26,7 @@ export type FuriganaFormat =
   | "mecab" // MeCab 输出格式
   | "kuromoji"; // Kuromoji 输出格式
 
-/**
- * 解析不同格式的 Furigana 数据
- */
+/** * 解析不同格式 Furigana 数据*/
 export function parseFurigana(
   furiganaString: string,
   originalText: string,
@@ -68,7 +63,7 @@ export function parseFurigana(
         tokens = parseKuromojiFormat(furiganaString);
         break;
       default:
-        // 降级处理
+        // 降级Process
         return {
           html: escapeHtml(originalText),
           text: originalText,
@@ -81,9 +76,8 @@ export function parseFurigana(
       text: originalText,
       hasFurigana: tokens.some((token) => token.reading && token.reading !== token.text),
     };
-  } catch (error) {
-    console.warn("Furigana parsing failed:", error);
-    // 错误时降级为纯文本
+  } catch {
+    // Error时降级a纯文本
     return {
       html: escapeHtml(originalText),
       text: originalText,
@@ -92,40 +86,38 @@ export function parseFurigana(
   }
 }
 
-/**
- * 解析 JSON 格式: {"日本語":"にほんご","学習":"がくしゅう"}
- */
+/** * 解析 JSON 格式: {"日本語":"にほんご","学習":"がくしゅう"}*/
 function parseJsonFormat(furiganaString: string, originalText: string): FuriganaToken[] {
   try {
     const data = JSON.parse(furiganaString);
     const tokens: FuriganaToken[] = [];
 
-    // 如果是对象格式 {word: reading}
+    // Ifisobject格式 {word: reading}
     if (typeof data === "object" && data !== null) {
       let remainingText = originalText;
 
       for (const [text, reading] of Object.entries(data)) {
         const index = remainingText.indexOf(text);
         if (index !== -1) {
-          // 添加前面的文本（如果有的话）
+          // Add前面文本（If有话）
           if (index > 0) {
             const beforeText = remainingText.substring(0, index);
             tokens.push({ text: beforeText });
           }
 
-          // 添加带假名的文本
+          // Add带假名文本
           tokens.push({
             text,
             reading: reading as string,
             isRuby: true,
           });
 
-          // 移除已处理的部分
+          // Removed已Process部分
           remainingText = remainingText.substring(index + text.length);
         }
       }
 
-      // 添加剩余的文本
+      // Add剩余文本
       if (remainingText) {
         tokens.push({ text: remainingText });
       }
@@ -133,14 +125,12 @@ function parseJsonFormat(furiganaString: string, originalText: string): Furigana
 
     return tokens;
   } catch {
-    // 如果解析失败，尝试其他格式
+    // If解析Failed，尝试其他格式
     return parseAlternativeFormats(furiganaString, originalText);
   }
 }
 
-/**
- * 解析 Ruby 标签格式
- */
+/** * 解析 Ruby 标签格式*/
 function parseRubyFormat(furiganaString: string): FuriganaToken[] {
   const tokens: FuriganaToken[] = [];
   const rubyRegex = /<ruby>([^<]+)<rt>([^<]+)<\/rt><\/ruby>/g;
@@ -150,7 +140,7 @@ function parseRubyFormat(furiganaString: string): FuriganaToken[] {
   while (true) {
     match = rubyRegex.exec(furiganaString);
     if (match === null) break;
-    // 添加前面的文本
+    // Add前面文本
     if (match.index > lastIndex) {
       const beforeText = furiganaString.substring(lastIndex, match.index);
       if (beforeText.trim()) {
@@ -158,7 +148,7 @@ function parseRubyFormat(furiganaString: string): FuriganaToken[] {
       }
     }
 
-    // 添加 Ruby 文本
+    // Add Ruby 文本
     tokens.push({
       text: match[1],
       reading: match[2],
@@ -168,7 +158,7 @@ function parseRubyFormat(furiganaString: string): FuriganaToken[] {
     lastIndex = match.index + match[0].length;
   }
 
-  // 添加剩余的文本
+  // Add剩余文本
   if (lastIndex < furiganaString.length) {
     const remainingText = furiganaString.substring(lastIndex);
     if (remainingText.trim()) {
@@ -179,16 +169,14 @@ function parseRubyFormat(furiganaString: string): FuriganaToken[] {
   return tokens;
 }
 
-/**
- * 解析括号格式: 日本語(にほんご)
- */
+/** * 解析括号格式: 日本語(にほんご)*/
 function parseBracketsFormat(furiganaString: string, originalText: string): FuriganaToken[] {
   const tokens: FuriganaToken[] = [];
   const bracketRegex = /([^(]+)\(([^)]+)\)/g;
   let remainingText = originalText;
   let match: RegExpExecArray | null;
 
-  // 从 furiganaString 中提取匹配的部分
+  // 从 furiganaString in提取匹配部分
   while (true) {
     match = bracketRegex.exec(furiganaString);
     if (match === null) break;
@@ -196,12 +184,12 @@ function parseBracketsFormat(furiganaString: string, originalText: string): Furi
     const index = remainingText.indexOf(text);
 
     if (index !== -1) {
-      // 添加前面的文本
+      // Add前面文本
       if (index > 0) {
         tokens.push({ text: remainingText.substring(0, index) });
       }
 
-      // 添加带假名的文本
+      // Add带假名文本
       tokens.push({
         text,
         reading,
@@ -212,7 +200,7 @@ function parseBracketsFormat(furiganaString: string, originalText: string): Furi
     }
   }
 
-  // 添加剩余的文本
+  // Add剩余文本
   if (remainingText) {
     tokens.push({ text: remainingText });
   }
@@ -220,14 +208,12 @@ function parseBracketsFormat(furiganaString: string, originalText: string): Furi
   return tokens;
 }
 
-/**
- * 解析空格分隔格式: 日本語 にほんご
- */
+/** * 解析空格分隔格式: 日本語 にほんご*/
 function parseSpacedFormat(furiganaString: string, _originalText: string): FuriganaToken[] {
   const parts = furiganaString.split(/\s+/);
   const tokens: FuriganaToken[] = [];
 
-  // 假设格式为: 文本1 假名1 文本2 假名2 ...
+  // 假设格式a: 文本1 假名1 文本2 假名2 ...
   for (let i = 0; i < parts.length; i += 2) {
     const text = parts[i];
     const reading = parts[i + 1];
@@ -244,9 +230,7 @@ function parseSpacedFormat(furiganaString: string, _originalText: string): Furig
   return tokens;
 }
 
-/**
- * 解析 MeCab 格式
- */
+/** * 解析 MeCab 格式*/
 function parseMecabFormat(furiganaString: string): FuriganaToken[] {
   const tokens: FuriganaToken[] = [];
   const lines = furiganaString.split("\n");
@@ -259,7 +243,7 @@ function parseMecabFormat(furiganaString: string): FuriganaToken[] {
       const text = parts[0];
       const features = parts[1].split(",");
 
-      // MeCab 的读法通常在第 8 个位置 (索引 7)
+      // MeCab 读法通常在第 8 个位置 (index 7)
       const reading = features[7] !== "*" ? features[7] : undefined;
 
       tokens.push({
@@ -273,9 +257,7 @@ function parseMecabFormat(furiganaString: string): FuriganaToken[] {
   return tokens;
 }
 
-/**
- * 解析 Kuromoji 格式
- */
+/** * 解析 Kuromoji 格式*/
 function parseKuromojiFormat(furiganaString: string): FuriganaToken[] {
   try {
     const data = JSON.parse(furiganaString);
@@ -297,11 +279,9 @@ function parseKuromojiFormat(furiganaString: string): FuriganaToken[] {
   }
 }
 
-/**
- * 尝试解析其他可能的格式
- */
+/** * 尝试解析其他可能格式*/
 function parseAlternativeFormats(furiganaString: string, originalText: string): FuriganaToken[] {
-  // 尝试简单的 key:value 格式
+  // 尝试简单 key:value 格式
   const kvRegex = /([^:,\s]+):([^,\s]+)/g;
   const tokens: FuriganaToken[] = [];
   let remainingText = originalText;
@@ -314,12 +294,12 @@ function parseAlternativeFormats(furiganaString: string, originalText: string): 
     const index = remainingText.indexOf(text);
 
     if (index !== -1) {
-      // 添加前面的文本
+      // Add前面文本
       if (index > 0) {
         tokens.push({ text: remainingText.substring(0, index) });
       }
 
-      // 添加带假名的文本
+      // Add带假名文本
       tokens.push({
         text,
         reading,
@@ -330,7 +310,7 @@ function parseAlternativeFormats(furiganaString: string, originalText: string): 
     }
   }
 
-  // 添加剩余的文本
+  // Add剩余文本
   if (remainingText) {
     tokens.push({ text: remainingText });
   }
@@ -338,9 +318,7 @@ function parseAlternativeFormats(furiganaString: string, originalText: string): 
   return tokens;
 }
 
-/**
- * 渲染 Furigana 为 HTML
- */
+/** * 渲染 Furigana a HTML*/
 function renderFuriganaHtml(tokens: FuriganaToken[]): string {
   return tokens
     .map((token) => {
@@ -352,52 +330,48 @@ function renderFuriganaHtml(tokens: FuriganaToken[]): string {
     .join("");
 }
 
-/**
- * HTML 转义
- */
+/** * HTML 转义*/
 function escapeHtml(text: string): string {
   const div = document.createElement("div");
   div.textContent = text;
   return div.innerHTML;
 }
 
-/**
- * 检测 Furigana 格式
- */
+/** * 检测 Furigana 格式*/
 export function detectFuriganaFormat(furiganaString: string): FuriganaFormat {
   if (!furiganaString) return "json";
 
-  // 检查 JSON 格式
+  // Check JSON 格式
   if (furiganaString.trim().startsWith("{") && furiganaString.trim().endsWith("}")) {
     try {
       JSON.parse(furiganaString);
       return "json";
     } catch {
-      // 不是有效的 JSON
+      // 不i有效 JSON
     }
   }
 
-  // 检查 Ruby 标签格式
+  // Check Ruby 标签格式
   if (furiganaString.includes("<ruby>") && furiganaString.includes("<rt>")) {
     return "ruby";
   }
 
-  // 检查括号格式
+  // Check括号格式
   if (/\([^)]+\)/.test(furiganaString)) {
     return "brackets";
   }
 
-  // 检查空格分隔格式
+  // Check空格分隔格式
   if (furiganaString.split(/\s+/).length >= 4) {
     return "spaced";
   }
 
-  // 检查 MeCab 格式
+  // Check MeCab 格式
   if (furiganaString.includes("\t") && furiganaString.includes(",")) {
     return "mecab";
   }
 
-  // 检查 Kuromoji 格式
+  // Check Kuromoji 格式
   if (furiganaString.trim().startsWith("[") && furiganaString.trim().endsWith("]")) {
     try {
       const parsed = JSON.parse(furiganaString);
@@ -405,17 +379,15 @@ export function detectFuriganaFormat(furiganaString: string): FuriganaFormat {
         return "kuromoji";
       }
     } catch {
-      // 不是有效的 JSON 数组
+      // 不i有效 JSON 数组
     }
   }
 
-  // 默认为 JSON 格式
+  // 默认a JSON 格式
   return "json";
 }
 
-/**
- * 验证 Furigana 数据
- */
+/** * Validate Furigana 数据*/
 export function validateFurigana(furiganaString: string, originalText: string): boolean {
   try {
     const format = detectFuriganaFormat(furiganaString);
@@ -426,9 +398,7 @@ export function validateFurigana(furiganaString: string, originalText: string): 
   }
 }
 
-/**
- * 智能 Furigana 解析（自动检测格式）
- */
+/** * 智能 Furigana 解析（自动检测格式）*/
 export function parseFuriganaAuto(furiganaString: string, originalText: string): ParsedFurigana {
   const format = detectFuriganaFormat(furiganaString);
   return parseFurigana(furiganaString, originalText, format);

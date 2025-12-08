@@ -1,12 +1,9 @@
-/**
- * 性能监控系统
- * 提供全面的性能指标收集、分析和监控功能
- */
+/** * 性能监控系统 * 提供全面性能指标收集、分析和监控functionality*/
 
 import type { AppError } from "@/types/api/errors";
 import { MonitoringService } from "./monitoring-service";
 
-// 性能指标类型
+// 性能指标class型
 export interface PerformanceMetric {
   id: string;
   timestamp: number;
@@ -18,7 +15,7 @@ export interface PerformanceMetric {
   metadata?: Record<string, unknown>;
 }
 
-// 指标分类
+// 指标分class
 export enum MetricCategory {
   FILE_PROCESSING = "file_processing",
   DATABASE = "database",
@@ -29,7 +26,7 @@ export enum MetricCategory {
   CUSTOM = "custom",
 }
 
-// 性能事件类型
+// 性能事件class型
 export interface PerformanceEvent {
   id: string;
   timestamp: number;
@@ -55,7 +52,7 @@ export interface PerformanceStats {
   timestamp: number;
 }
 
-// 内存使用信息
+// Memory使用信息
 export interface MemoryUsage {
   used: number;
   total: number;
@@ -65,7 +62,7 @@ export interface MemoryUsage {
   usedJSHeapSize?: number;
 }
 
-// 系统健康状态
+// 系统健康state
 export interface SystemHealth {
   status: "healthy" | "warning" | "critical";
   score: number;
@@ -73,7 +70,7 @@ export interface SystemHealth {
   timestamp: number;
 }
 
-// 健康检查项
+// 健康Check项
 export interface HealthCheck {
   name: string;
   status: "pass" | "fail" | "warning";
@@ -90,12 +87,12 @@ export interface PerformanceMonitoringConfig {
   maxMetricsPerCategory: number;
   maxEventsPerCategory: number;
   memoryThreshold: number; // MB
-  performanceThreshold: number; // ms
+  performanceThreshold: number; // m
   enableAutoMetrics: boolean;
   enableMemoryMonitoring: boolean;
   enableHealthChecks: boolean;
-  healthCheckInterval: number; // ms
-  metricsFlushInterval: number; // ms
+  healthCheckInterval: number; // m
+  metricsFlushInterval: number; // m
   enableConsoleLogging: boolean;
   enablePerformanceObserver: boolean;
 }
@@ -107,17 +104,17 @@ const DEFAULT_CONFIG: Required<PerformanceMonitoringConfig> = {
   maxMetricsPerCategory: 1000,
   maxEventsPerCategory: 500,
   memoryThreshold: 500, // 500MB
-  performanceThreshold: 1000, // 1秒
+  performanceThreshold: 1000, // 1seconds
   enableAutoMetrics: true,
   enableMemoryMonitoring: true,
   enableHealthChecks: true,
-  healthCheckInterval: 30000, // 30秒
-  metricsFlushInterval: 60000, // 1分钟
+  healthCheckInterval: 30000, // 30seconds
+  metricsFlushInterval: 60000, // 1minutes
   enableConsoleLogging: false,
   enablePerformanceObserver: true,
 };
 
-// 性能监控类
+// 性能监控class
 export class PerformanceMonitoring {
   private config: Required<PerformanceMonitoringConfig>;
   private monitoringService: MonitoringService;
@@ -174,7 +171,7 @@ export class PerformanceMonitoring {
     this.logInfo("Performance monitoring stopped");
   }
 
-  // 记录性能指标
+  // record性能指标
   recordMetric(
     name: string,
     category: MetricCategory,
@@ -204,13 +201,13 @@ export class PerformanceMonitoring {
     // 保持指标数量限制
     this.trimMetricsByCategory(category);
 
-    // 更新统计信息
+    // Update统计信息
     this.updateStats(name, category, value);
 
-    // 检查性能阈值
+    // Check性能阈值
     this.checkPerformanceThreshold(name, category, value);
 
-    // 记录到基础监控服务
+    // recordTo基础监控服务
     this.monitoringService.logCustomEvent(
       `performance_${category}`,
       name,
@@ -259,11 +256,11 @@ export class PerformanceMonitoring {
       error: error?.message,
     });
 
-    // 记录性能事件
+    // record性能事件
     this.recordPerformanceEvent({
       name,
       category,
-      startTime: startTime / 1000, // 转换为秒
+      startTime: startTime / 1000, // 转换asseconds
       endTime: performance.now() / 1000,
       success,
       error,
@@ -272,13 +269,13 @@ export class PerformanceMonitoring {
     return duration;
   }
 
-  // 记录性能事件
+  // record性能事件
   recordPerformanceEvent(event: Omit<PerformanceEvent, "id" | "timestamp" | "duration">): void {
     const fullEvent: PerformanceEvent = {
       ...event,
       id: this.generateId(),
       timestamp: Date.now(),
-      duration: (event.endTime - event.startTime) * 1000, // 转换为毫秒
+      duration: (event.endTime - event.startTime) * 1000, // 转换a毫seconds
     };
 
     const categoryEvents = this.events.get(event.category) || [];
@@ -288,7 +285,7 @@ export class PerformanceMonitoring {
     // 保持事件数量限制
     this.trimEventsByCategory(event.category);
 
-    // 记录到基础监控服务
+    // recordTo基础监控服务
     this.monitoringService.logCustomEvent(
       `performance_event_${event.category}`,
       event.name,
@@ -301,23 +298,23 @@ export class PerformanceMonitoring {
     );
   }
 
-  // 获取性能统计
+  // Get性能统计
   getStats(name: string, category: MetricCategory): PerformanceStats | null {
     const key = `${category}.${name}`;
     return this.stats.get(key) || null;
   }
 
-  // 获取分类指标
+  // Get分class指标
   getMetricsByCategory(category: MetricCategory): PerformanceMetric[] {
     return this.metrics.get(category) || [];
   }
 
-  // 获取分类事件
+  // Get分class事件
   getEventsByCategory(category: MetricCategory): PerformanceEvent[] {
     return this.events.get(category) || [];
   }
 
-  // 获取内存使用情况
+  // GetMemory使用情况
   getMemoryUsage(): MemoryUsage | null {
     if (typeof performance === "undefined" || !("memory" in performance)) {
       return null;
@@ -344,13 +341,13 @@ export class PerformanceMonitoring {
     };
   }
 
-  // 获取系统健康状态
+  // Get系统健康state
   getSystemHealth(): SystemHealth {
     const checks: HealthCheck[] = [];
     let totalScore = 0;
     let validChecks = 0;
 
-    // 内存健康检查
+    // Memory健康Check
     const memoryUsage = this.getMemoryUsage();
     if (memoryUsage) {
       const memoryScore = Math.max(0, 100 - (memoryUsage.percentage - 50) * 2);
@@ -367,8 +364,8 @@ export class PerformanceMonitoring {
       validChecks++;
     }
 
-    // 性能健康检查
-    const recentEvents = this.getRecentPerformanceEvents(60000); // 最近1分钟
+    // 性能健康Check
+    const recentEvents = this.getRecentPerformanceEvents(60000); // 最近1minutes
     const avgPerformance =
       recentEvents.length > 0
         ? recentEvents.reduce((sum, event) => sum + event.duration, 0) / recentEvents.length
@@ -394,7 +391,7 @@ export class PerformanceMonitoring {
     totalScore += performanceScore;
     validChecks++;
 
-    // 错误率健康检查
+    // Error率健康Check
     const errorRate = this.calculateErrorRate(recentEvents);
     const errorScore = Math.max(0, 100 - errorRate * 100);
     checks.push({
@@ -419,7 +416,7 @@ export class PerformanceMonitoring {
     };
   }
 
-  // 获取性能报告
+  // Get性能报告
   getPerformanceReport(): {
     metrics: Record<MetricCategory, PerformanceMetric[]>;
     events: Record<MetricCategory, PerformanceEvent[]>;
@@ -463,7 +460,7 @@ export class PerformanceMonitoring {
 
     // 清理旧数据
     Object.values(MetricCategory).forEach((category) => {
-      const cutoff = Date.now() - 24 * 60 * 60 * 1000; // 24小时前
+      const cutoff = Date.now() - 24 * 60 * 60 * 1000; // 24hours前
       this.metrics.set(
         category,
         this.getMetricsByCategory(category).filter((m) => m.timestamp > cutoff),
@@ -475,7 +472,7 @@ export class PerformanceMonitoring {
     });
   }
 
-  // 私有方法
+  // 私有method
 
   private shouldSample(): boolean {
     return Math.random() < this.config.sampleRate;
@@ -509,7 +506,7 @@ export class PerformanceMonitoring {
     stats.max = Math.max(stats.max, value);
     stats.timestamp = Date.now();
 
-    // 计算百分位数（简化版本）
+    // 计算百分位数（Simplified版本）
     const categoryMetrics = this.getMetricsByCategory(category);
     const nameMetrics = categoryMetrics.filter((m) => m.name === name);
     if (nameMetrics.length > 0) {
@@ -629,7 +626,7 @@ export class PerformanceMonitoring {
           },
         );
 
-        // 检查内存阈值
+        // CheckMemory阈值
         if (memoryUsage.used > this.config.memoryThreshold) {
           this.monitoringService.logWarning(`Memory threshold exceeded: ${memoryUsage.used}MB`, {
             component: "performance_monitoring",
@@ -666,7 +663,7 @@ export class PerformanceMonitoring {
         { status: health.status },
       );
 
-      // 如果系统状态不健康，记录警告
+      // If系统state不健康，record警告
       if (health.status === "critical") {
         this.monitoringService.logWarning("System health is critical", {
           component: "performance_monitoring",
@@ -748,7 +745,7 @@ export class PerformanceMonitoring {
 // 全局性能监控实例
 let globalPerformanceMonitoring: PerformanceMonitoring | null = null;
 
-// 获取全局性能监控实例
+// Get全局性能监控实例
 export function getPerformanceMonitoring(): PerformanceMonitoring {
   if (!globalPerformanceMonitoring) {
     globalPerformanceMonitoring = new PerformanceMonitoring();
@@ -764,7 +761,7 @@ export function initializePerformanceMonitoring(
   monitoring.start();
 }
 
-// 便捷的性能计时函数
+// 便捷性能计时函数
 export function measurePerformance<T>(
   name: string,
   category: MetricCategory,
@@ -804,7 +801,7 @@ export async function measureAsyncPerformance<T>(
   }
 }
 
-// 便捷的指标记录函数
+// 便捷指标record函数
 export function recordPerformanceMetric(
   name: string,
   category: MetricCategory,
@@ -817,13 +814,13 @@ export function recordPerformanceMetric(
   monitoring.recordMetric(name, category, value, unit, tags, metadata);
 }
 
-// 获取性能报告
+// Get性能报告
 export function getPerformanceReport() {
   const monitoring = getPerformanceMonitoring();
   return monitoring.getPerformanceReport();
 }
 
-// 便捷的性能Hook
+// 便捷性能Hook
 export function usePerformanceMonitoring() {
   const monitoring = getPerformanceMonitoring();
 

@@ -1,7 +1,7 @@
 import "@testing-library/jest-dom/vitest";
 import { afterEach, beforeAll, vi } from "vitest";
 
-// 设置 fake-indexeddb
+// Set fake-indexeddb
 import "fake-indexeddb/auto";
 
 // 清理 mock

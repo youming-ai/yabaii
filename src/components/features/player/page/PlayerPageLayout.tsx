@@ -31,7 +31,7 @@ export function PlayerPageLayout({
       >
         <div className="flex-1 px-4 py-20 sm:px-6 lg:px-8 mt-24">
           <div className="mx-auto max-w-4xl">
-            {/* 使用与首页一致的间距系统 */}
+            {/*使用与首页一致间距系统*/}
             <div className="space-y-8">{children}</div>
           </div>
         </div>

@@ -1,17 +1,15 @@
-/**
- * URL管理器 - 自动跟踪和清理Object URLs (函数式模块)
- */
+/** * URL管理器 - 自动跟踪和清理Object URLs (函数式模块)*/
 
 import { handleSilently } from "../utils/error-handler";
 
-// 向后兼容：保留 URLManager 类别名
+// 向后兼容：keep URLManager class别名
 // biome-ignore lint/complexity/noStaticOnlyClass: Backward compatibility for existing code
 class URLManager {
   static createObjectUrl(blob: Blob): string {
     return createObjectUrl(blob);
   }
 
-  // 兼容旧的方法名
+  // 兼容旧method名
   static createObjectURL(blob: Blob): string {
     return createObjectUrl(blob);
   }
@@ -48,18 +46,14 @@ class URLManager {
 // 活跃URLs跟踪
 const activeUrls = new Set<string>();
 
-/**
- * 创建Object URL并自动跟踪
- */
+/** * 创建Object URL并自动跟踪*/
 export function createObjectUrl(blob: Blob): string {
   const url = URL.createObjectURL(blob);
   activeUrls.add(url);
   return url;
 }
 
-/**
- * 撤销Object URL并从跟踪中移除
- */
+/** * 撤销Object URL并从跟踪inRemoved*/
 export function revokeObjectUrl(url: string): void {
   if (activeUrls.has(url)) {
     URL.revokeObjectURL(url);
@@ -67,16 +61,12 @@ export function revokeObjectUrl(url: string): void {
   }
 }
 
-/**
- * 获取当前活跃的URL数量
- */
+/** * Get当前活跃URL数量*/
 export function getActiveUrlCount(): number {
   return activeUrls.size;
 }
 
-/**
- * 清理所有活跃的URLs
- */
+/** * 清理所有活跃URLs*/
 export function revokeAllUrls(): void {
   for (const url of activeUrls) {
     try {
@@ -88,12 +78,10 @@ export function revokeAllUrls(): void {
   activeUrls.clear();
 }
 
-/**
- * 创建临时URL（自动清理）
- */
+/** * 创建临时URL（自动清理）*/
 export function createTemporaryUrl(
   blob: Blob,
-  autoRevokeAfter: number = 5 * 60 * 1000, // 默认5分钟
+  autoRevokeAfter: number = 5 * 60 * 1000, // 默认5minutes
 ): string {
   const url = createObjectUrl(blob);
 
@@ -102,7 +90,7 @@ export function createTemporaryUrl(
       revokeObjectUrl(url);
     }, autoRevokeAfter);
   } else if (autoRevokeAfter === 0) {
-    // 使用 setTimeout(..., 0) 而不是立即撤销，以匹配测试期望
+    // 使用 setTimeout(..., 0) 而不i立即撤销，以匹配测试期望
     setTimeout(() => {
       revokeObjectUrl(url);
     }, 0);
@@ -111,7 +99,7 @@ export function createTemporaryUrl(
   return url;
 }
 
-// 为了向后兼容，保留别名（已修正命名约定）
+// a了向后兼容，keep别名（已修正命名约定）
 export function createObjectUrlLegacy(blob: Blob): string {
   return createObjectUrl(blob);
 }
@@ -124,5 +112,5 @@ export function createTemporaryUrlLegacy(blob: Blob, autoRevokeAfter?: number): 
   return createTemporaryUrl(blob, autoRevokeAfter);
 }
 
-// 导出 URLManager 类以保持向后兼容
+// 导出 URLManager class以保持向后兼容
 export { URLManager };

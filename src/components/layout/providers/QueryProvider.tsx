@@ -10,7 +10,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 1000 * 60 * 15, // 15 minutes - 增加缓存时间减少网络请求
+            staleTime: 1000 * 60 * 15, // 15 minutes - 增加Cache时间减少网络request
             gcTime: 1000 * 60 * 30, // 30 minutes - 增加垃圾回收时间
             retry: (failureCount, error) => {
               // Don't retry on 4xx errors

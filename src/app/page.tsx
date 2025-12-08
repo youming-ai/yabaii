@@ -12,12 +12,12 @@ export default function HomePage() {
       <main className="flex-1 px-4 py-8 sm:px-6 lg:px-8 mt-24">
         <div className="mx-auto max-w-5xl">
           <Suspense fallback={<PageLoadingState />}>
-            {/* 统计卡片 */}
+            {/*统计卡片*/}
             <div className="mb-8">
               <StatsCards />
             </div>
 
-            {/* 文件管理器 */}
+            {/*File管理器*/}
             <FileManager />
           </Suspense>
         </div>

@@ -1,56 +1,69 @@
-/**
- * 统一的文件状态管理 Hook
- * 完全基于 TranscriptRow.status，移除 FileRow.status 依赖
- */
+/** * 统一Filestate管理 Hook * 完全基于 TranscriptRow.status，Removed FileRow.status 依赖*/
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { TranscriptionLanguageCode } from "@/components/layout/contexts/TranscriptionLanguageContext";
 import { useTranscriptionLanguage } from "@/components/layout/contexts/TranscriptionLanguageContext";
 import { useTranscription } from "@/hooks/api/useTranscription";
-import { getFileRealStatus, safeUpdateTranscriptionStatus } from "@/lib/utils/file-status-manager";
+import { DBUtils, db } from "@/lib/db/db";
 import { handleTranscriptionError } from "@/lib/utils/transcription-error-handler";
 import { getTranscriptionQueue } from "@/lib/utils/transcription-queue";
 import { FileStatus } from "@/types/db/database";
-import { db } from "@/lib/db/db";
 
-// 查询键定义
+// Query键定义
 export const fileStatusKeys = {
   all: ["fileStatus"] as const,
   forFile: (fileId: number) => [...fileStatusKeys.all, "file", fileId] as const,
 };
 
-/**
- * 获取文件状态
- * 使用统一的状态管理器
- */
+/** * TranscriptRow.status -> FileStatus 映射*/
+function mapTranscriptStatusToFileStatus(
+  status: "pending" | "processing" | "completed" | "failed" | undefined,
+): FileStatus {
+  switch (status) {
+    case "processing":
+      return FileStatus.TRANSCRIBING;
+    case "completed":
+      return FileStatus.COMPLETED;
+    case "failed":
+      return FileStatus.ERROR;
+    default:
+      return FileStatus.UPLOADED;
+  }
+}
+
+/** * GetFilestate * 完全基于 TranscriptRow.status 判断state*/
 export function useFileStatus(fileId: number) {
   return useQuery({
     queryKey: fileStatusKeys.forFile(fileId),
     queryFn: async () => {
-      // 使用统一的状态管理器获取真实状态
-      const statusInfo = await getFileRealStatus(fileId);
-
-      // 从数据库获取文件信息
-      const file = await db.files.get(fileId);
+      // 从 DBUtils GetFile信息
+      const file = await DBUtils.getFile(fileId);
       if (!file) {
-        return { status: FileStatus.ERROR, error: "文件不存在" };
+        return { status: FileStatus.ERROR, error: "File not found" };
       }
 
+      // Through DBUtils CheckTranscriptionrecord
+      const transcript = await DBUtils.findTranscriptByFileId(fileId);
+
+      // 完全基于 TranscriptRow.status 确定state
+      const status = transcript
+        ? mapTranscriptStatusToFileStatus(transcript.status)
+        : FileStatus.UPLOADED;
+
       return {
-        ...statusInfo,
+        status,
+        transcriptId: transcript?.id,
+        transcript,
         file,
       };
     },
-    staleTime: 1000 * 60 * 5, // 5分钟缓存
-    gcTime: 1000 * 60 * 15, // 15分钟垃圾回收
+    staleTime: 1000 * 60 * 5, // 5minutesCache
+    gcTime: 1000 * 60 * 15, // 15minutes垃圾回收
   });
 }
 
-/**
- * 文件状态管理 Hook
- * 使用转录队列和统一的状态管理
- */
+/** * Filestate管理 Hook * 使用Transcription队列和统一state管理*/
 export function useFileStatusManager(fileId: number) {
   const queryClient = useQueryClient();
   const transcription = useTranscription();
@@ -58,30 +71,48 @@ export function useFileStatusManager(fileId: number) {
   const [isTranscribing, setIsTranscribing] = useState(false);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  // 更新转录状态（使用统一的状态管理器）
+  // UpdateTranscriptionstate（仅Update TranscriptRow）
   const updateTranscriptionStatus = useCallback(
     async (status: "pending" | "processing" | "completed" | "failed", error?: string) => {
       try {
-        // 使用统一的状态管理器进行安全的状态更新
-        await safeUpdateTranscriptionStatus(fileId, status, error);
+        // Through DBUtils 查找现有Transcriptionrecord
+        const transcript = await DBUtils.findTranscriptByFileId(fileId);
 
-        // 刷新查询缓存
+        if (transcript?.id) {
+          // Through DBUtils Update现有Transcriptionrecord
+          await DBUtils.updateTranscriptStatus(transcript.id, status);
+          if (error) {
+            await DBUtils.update(db.transcripts, transcript.id, { error });
+          }
+        } else if (status === "pending" || status === "processing") {
+          // Through DBUtils 创建新Transcriptionrecord
+          await DBUtils.addTranscript({
+            fileId,
+            status,
+            language: "",
+            processingTime: 0,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+
+        // 刷新QueryCache
         queryClient.invalidateQueries({
           queryKey: fileStatusKeys.forFile(fileId),
         });
-      } catch (error) {
-        console.error("更新转录状态失败:", error);
+      } catch {
+        // 静默ProcessstateUpdateFailed，不影响用户体验
       }
     },
     [fileId, queryClient],
   );
 
-  // 开始转录（使用队列和学习语言配置）
+  // 开始Transcription（使用队列和学习Language配置）
   const startTranscription = useCallback(
     async (language?: TranscriptionLanguageCode) => {
       const queue = getTranscriptionQueue();
 
-      // 如果已经在处理，不重复添加
+      // If已经在Process，不重复Add
       if (queue.isInQueue(fileId)) {
         return;
       }
@@ -93,25 +124,28 @@ export function useFileStatusManager(fileId: number) {
       abortControllerRef.current = abortController;
 
       try {
-        // 设置状态为转录中
+        // SetstateasTranscriptionin
         await updateTranscriptionStatus("processing");
 
-        // 使用学习语言中的目标语言，如果没有指定语言参数
+        // 使用学习Languagein目标Language（Audio原Language），If没有指定Language参数
         const targetLang = language || learningLanguage.targetLanguage;
+        // 母语Used forTranslation目标
+        const nativeLang = learningLanguage.nativeLanguage;
 
-        // 开始转录（支持自动重试和取消）
+        // 开始Transcription（支持自动重试和取消）
         await transcription.mutateAsync({
           fileId,
           language: targetLang,
+          nativeLanguage: nativeLang,
           signal: abortController.signal,
         });
 
-        // 转录成功后设置状态为完成
+        // TranscriptionSuccess后Setstateas完成
         await updateTranscriptionStatus("completed");
       } catch (error) {
-        // 检查是否是取消操作
+        // Checkis否i取消operations
         if (error instanceof DOMException && error.name === "AbortError") {
-          // 取消不算错误，恢复到待转录状态
+          // 取消不算Error，恢复To待Transcriptionstate
           await updateTranscriptionStatus("pending");
           return;
         }
@@ -132,7 +166,7 @@ export function useFileStatusManager(fileId: number) {
     [fileId, transcription, updateTranscriptionStatus, learningLanguage],
   );
 
-  // 取消转录
+  // 取消Transcription
   const cancelTranscription = useCallback(() => {
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
@@ -140,21 +174,29 @@ export function useFileStatusManager(fileId: number) {
     }
   }, []);
 
-  // 重置文件状态
+  // 重置Filestate
   const resetFileStatus = useCallback(async () => {
-    // 取消正在进行的转录
+    // 取消正在进行Transcription
     cancelTranscription();
 
-    // 删除现有转录记录
-    const transcripts = await db.transcripts.where("fileId").equals(fileId).toArray();
-    for (const transcript of transcripts) {
-      if (transcript.id) {
-        await db.segments.where("transcriptId").equals(transcript.id).delete();
-        await db.transcripts.delete(transcript.id);
-      }
+    // Through DBUtils Delete现有Transcriptionrecord
+    const transcript = await DBUtils.findTranscriptByFileId(fileId);
+    if (transcript?.id) {
+      // 先Delete该Transcription所有segments
+      await DBUtils.where(db.segments, (segment) => segment.transcriptId === transcript.id).then(
+        (segments) => {
+          return Promise.all(
+            segments.map((segment) =>
+              segment.id ? DBUtils.delete(db.segments, segment.id) : Promise.resolve(),
+            ),
+          );
+        },
+      );
+      // 再DeleteTranscriptionrecord
+      await DBUtils.delete(db.transcripts, transcript.id);
     }
 
-    // 刷新查询缓存
+    // 刷新QueryCache
     queryClient.invalidateQueries({
       queryKey: fileStatusKeys.forFile(fileId),
     });
@@ -178,30 +220,25 @@ export function useFileStatusManager(fileId: number) {
   };
 }
 
-/**
- * 批量文件状态管理
- * 使用转录队列进行并发控制
- */
+/** * batchFilestate管理 * 使用Transcription队列进行并发控制*/
 export function useBatchFileStatus() {
   const queryClient = useQueryClient();
   const transcription = useTranscription();
 
-  // 批量转录 - 使用队列
+  // batchTranscription - 使用队列
   const startBatchTranscription = useCallback(
     async (fileIds: number[], language: TranscriptionLanguageCode = "ja") => {
       const queue = getTranscriptionQueue();
-      const results: Array<{
-        fileId: number;
-        success: boolean;
-        error?: string;
-      }> = [];
+      const results: Array<{ fileId: number; success: boolean; error?: string }> = [];
 
-      // 设置队列任务回调
+      // Set队列任务回调
       queue.setTaskCallback(async (task) => {
-        // 创建转录记录
-        await db.transcripts.add({
+        // Through DBUtils 创建Transcriptionrecord
+        await DBUtils.addTranscript({
           fileId: task.fileId,
           status: "processing",
+          language: "",
+          processingTime: 0,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -210,20 +247,17 @@ export function useBatchFileStatus() {
           queryKey: fileStatusKeys.forFile(task.fileId),
         });
 
-        // 执行转录
+        // 执行Transcription
         await transcription.mutateAsync({
           fileId: task.fileId,
-          language: language,
+          language: task.language,
           signal: task.abortController.signal,
         });
 
-        // 更新状态为完成
-        const transcripts = await db.transcripts.where("fileId").equals(task.fileId).toArray();
-        if (transcripts.length > 0 && transcripts[0].id) {
-          await db.transcripts.update(transcripts[0].id, {
-            status: "completed",
-            updatedAt: new Date(),
-          });
+        // Through DBUtils Updatestateas完成
+        const transcript = await DBUtils.findTranscriptByFileId(task.fileId);
+        if (transcript?.id) {
+          await DBUtils.updateTranscriptStatus(transcript.id, "completed");
         }
 
         queryClient.invalidateQueries({
@@ -233,15 +267,14 @@ export function useBatchFileStatus() {
         results.push({ fileId: task.fileId, success: true });
       });
 
-      // 设置状态变更回调
+      // Setstate变更回调
       queue.setStatusChangeCallback(async (fileId, status, error) => {
         if (status === "failed") {
-          const transcripts = await db.transcripts.where("fileId").equals(fileId).toArray();
-          if (transcripts.length > 0 && transcripts[0].id) {
-            await db.transcripts.update(transcripts[0].id, {
+          const transcript = await DBUtils.findTranscriptByFileId(fileId);
+          if (transcript?.id) {
+            await DBUtils.update(db.transcripts, transcript.id, {
               status: "failed",
               error,
-              updatedAt: new Date(),
             });
           }
           queryClient.invalidateQueries({
@@ -251,7 +284,7 @@ export function useBatchFileStatus() {
         }
       });
 
-      // 将所有任务添加到队列
+      // 将所有任务AddTo队列
       for (const fileId of fileIds) {
         queue.add(fileId, language);
       }
@@ -261,7 +294,7 @@ export function useBatchFileStatus() {
     [queryClient, transcription],
   );
 
-  // 取消所有转录
+  // 取消所有Transcription
   const cancelAllTranscriptions = useCallback(() => {
     const queue = getTranscriptionQueue();
     queue.cancelAll();

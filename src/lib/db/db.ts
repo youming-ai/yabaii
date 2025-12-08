@@ -1,11 +1,9 @@
-/**
- * 简化的数据库操作文件
- * 移除了复杂的批量处理器，保留核心功能
- */
+/** * Simplified database operations file * Removed complex batch processors, keeping core functionality*/
 
 import Dexie, { type Table } from "dexie";
 import type { FileRow, Segment, TranscriptRow } from "@/types/db/database";
 import { handleError } from "../utils/error-handler";
+import { dbLogger } from "../utils/logger";
 
 export class AppDatabase extends Dexie {
   files!: Table<FileRow>;
@@ -31,7 +29,7 @@ export class AppDatabase extends Dexie {
       })
       .upgrade((_tx) => {
         // Initial setup - no migration needed
-        console.log("Database version 1 initialized");
+        dbLogger.debug("Database version 1 initialized");
       });
 
     this.version(2)
@@ -43,7 +41,7 @@ export class AppDatabase extends Dexie {
       })
       .upgrade(async (_tx) => {
         // Add wordTimestamps to existing segments if needed
-        console.log("Database migrated to version 2: Added wordTimestamps support");
+        dbLogger.debug("Database migrated to version 2: Added wordTimestamps support");
       });
 
     this.version(3)
@@ -55,7 +53,7 @@ export class AppDatabase extends Dexie {
       })
       .upgrade(async (_tx) => {
         // Add enhanced segment fields for better transcription features
-        console.log("Database migrated to version 3: Added enhanced transcription features");
+        dbLogger.debug("Database migrated to version 3: Added enhanced transcription features");
       });
   }
 }
@@ -63,51 +61,179 @@ export class AppDatabase extends Dexie {
 // Create database instance
 export const db = new AppDatabase();
 
-// Simplified database utilities
+// Simplified database utilities with repository functionality integrated
 export const DBUtils = {
-  /**
-   * Add a file to the database
-   */
+  /** * Generic database operations*/
+  // Core CRUD operations
+  async add<T>(table: Dexie.Table<T, number>, item: Omit<T, "id">): Promise<number> {
+    try {
+      return await table.add(item as T);
+    } catch (error) {
+      throw handleError(error, `DBUtils.add`);
+    }
+  },
+
+  async get<T>(table: Dexie.Table<T, number>, id: number): Promise<T | undefined> {
+    try {
+      return await table.get(id);
+    } catch (error) {
+      throw handleError(error, `DBUtils.get`);
+    }
+  },
+
+  async update<T>(table: Dexie.Table<T, number>, id: number, changes: Partial<T>): Promise<number> {
+    try {
+      return await table.update(id, changes as any);
+    } catch (error) {
+      throw handleError(error, `DBUtils.update`);
+    }
+  },
+
+  async delete<T>(table: Dexie.Table<T, number>, id: number): Promise<void> {
+    try {
+      await table.delete(id);
+    } catch (error) {
+      throw handleError(error, `DBUtils.delete`);
+    }
+  },
+
+  // Batch operations
+  async bulkAdd<T>(table: Dexie.Table<T, number>, items: Omit<T, "id">[]): Promise<number[]> {
+    try {
+      const result = await table.bulkAdd(items as T[]);
+      return Array.isArray(result) ? result : [result];
+    } catch (error) {
+      throw handleError(error, `DBUtils.bulkAdd`);
+    }
+  },
+
+  async bulkUpdate<T>(
+    table: Dexie.Table<T, number>,
+    items: Array<{ id: number; changes: Partial<T> }>,
+  ): Promise<number[]> {
+    try {
+      return await Promise.all(items.map(({ id, changes }) => table.update(id, changes as any)));
+    } catch (error) {
+      throw handleError(error, `DBUtils.bulkUpdate`);
+    }
+  },
+
+  // Query operations
+  async where<T>(table: Dexie.Table<T, number>, predicate: (item: T) => boolean): Promise<T[]> {
+    try {
+      return await table.filter(predicate).toArray();
+    } catch (error) {
+      throw handleError(error, `DBUtils.where`);
+    }
+  },
+
+  async orderBy<T>(
+    table: Dexie.Table<T, number>,
+    key: keyof T,
+    direction: "asc" | "desc" = "asc",
+  ): Promise<T[]> {
+    try {
+      if (direction === "desc") {
+        return await table
+          .orderBy(key as string)
+          .reverse()
+          .toArray();
+      }
+      return await table.orderBy(key as string).toArray();
+    } catch (error) {
+      throw handleError(error, `DBUtils.orderBy`);
+    }
+  },
+
+  /** * File-specific operations*/
   async addFile(file: Omit<FileRow, "id">): Promise<number> {
-    try {
-      return await db.files.add(file as FileRow);
-    } catch (error) {
-      throw handleError(error, "DBUtils.addFile");
-    }
+    return await this.add(db.files, file);
   },
 
-  /**
-   * Get a file by ID
-   */
   async getFile(id: number): Promise<FileRow | undefined> {
+    return await this.get(db.files, id);
+  },
+
+  async getAllFiles(): Promise<FileRow[]> {
     try {
-      return await db.files.get(id);
+      return await this.orderBy(db.files, "uploadedAt", "desc");
     } catch (error) {
-      throw handleError(error, "DBUtils.getFile");
+      throw handleError(error, "DBUtils.getAllFiles");
     }
   },
 
-  /**
-   * Delete a file and its associated data
-   * 删除顺序：segments → transcripts → file（先删子表再删父表）
-   */
+  async findFilesByName(name: string): Promise<FileRow[]> {
+    return await this.where(db.files, (file) => file.name.includes(name));
+  },
+
+  async getStorageUsage(): Promise<{
+    totalSize: number;
+    totalFiles: number;
+    averageFileSize: number;
+    largestFileSize: number;
+    fileCountByType: Record<string, number>;
+  }> {
+    try {
+      const files = await db.files.toArray();
+      const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+      const fileCountByType = files.reduce(
+        (acc, file) => {
+          acc[file.type] = (acc[file.type] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+
+      return {
+        totalSize,
+        totalFiles: files.length,
+        averageFileSize: files.length > 0 ? Math.round(totalSize / files.length) : 0,
+        largestFileSize: files.length > 0 ? Math.max(...files.map((f) => f.size)) : 0,
+        fileCountByType,
+      };
+    } catch (error) {
+      throw handleError(error, "DBUtils.getStorageUsage");
+    }
+  },
+
+  async cleanupOldFiles(daysOld: number = 90): Promise<number> {
+    try {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+      const oldFiles = await db.files.where("uploadedAt").below(cutoffDate).toArray();
+
+      // Delete files and their related data
+      for (const file of oldFiles) {
+        if (file.id) {
+          await this.deleteFile(file.id);
+        }
+      }
+
+      return oldFiles.length;
+    } catch (error) {
+      throw handleError(error, "DBUtils.cleanupOldFiles");
+    }
+  },
+
+  /** * Delete a file and its associated data * Delete order: segments → transcripts → file (children first)*/
   async deleteFile(id: number): Promise<void> {
     try {
       await db.transaction("rw", db.files, db.transcripts, db.segments, async () => {
-        // 1. 获取关联的 transcripts
+        // 1. Get related transcripts
         const transcripts = await db.transcripts.where("fileId").equals(id).toArray();
 
-        // 2. 先删除每个 transcript 的 segments
+        // 2. Delete each transcript's segments first
         for (const transcript of transcripts) {
           if (transcript.id) {
             await db.segments.where("transcriptId").equals(transcript.id).delete();
           }
         }
 
-        // 3. 删除 transcripts
+        // 3. Delete transcripts
         await db.transcripts.where("fileId").equals(id).delete();
 
-        // 4. 最后删除 file
+        // 4. Finally delete the file
         await db.files.delete(id);
       });
     } catch (error) {
@@ -115,42 +241,56 @@ export const DBUtils = {
     }
   },
 
-  /**
-   * Get all files
-   */
-  async getAllFiles(): Promise<FileRow[]> {
-    try {
-      return await db.files.orderBy("uploadedAt").reverse().toArray();
-    } catch (error) {
-      throw handleError(error, "DBUtils.getAllFiles");
-    }
-  },
-
-  /**
-   * Add a transcript
-   */
+  /** * Transcript-specific operations*/
   async addTranscript(transcript: Omit<TranscriptRow, "id">): Promise<number> {
+    return await this.add(db.transcripts, transcript);
+  },
+
+  async getTranscript(id: number): Promise<TranscriptRow | undefined> {
+    return await this.get(db.transcripts, id);
+  },
+
+  async findTranscriptByFileId(fileId: number): Promise<TranscriptRow | undefined> {
     try {
-      return await db.transcripts.add(transcript as TranscriptRow);
+      return await db.transcripts.where("fileId").equals(fileId).first();
     } catch (error) {
-      throw handleError(error, "DBUtils.addTranscript");
+      throw handleError(error, "DBUtils.findTranscriptByFileId");
     }
   },
 
-  /**
-   * Update transcript status
-   */
   async updateTranscriptStatus(id: number, status: TranscriptRow["status"]): Promise<void> {
+    await this.update(db.transcripts, id, { status, updatedAt: new Date() });
+  },
+
+  async getTranscriptsByStatus(status: TranscriptRow["status"]): Promise<TranscriptRow[]> {
+    return await this.where(db.transcripts, (transcript) => transcript.status === status);
+  },
+
+  /** * Segment-specific operations*/
+  async addSegment(segment: Omit<Segment, "id">): Promise<number> {
+    return await this.add(db.segments, segment);
+  },
+
+  async getSegment(id: number): Promise<Segment | undefined> {
+    return await this.get(db.segments, id);
+  },
+
+  async getSegmentsByTranscriptId(transcriptId: number): Promise<Segment[]> {
     try {
-      await db.transcripts.update(id, { status, updatedAt: new Date() });
+      return await db.segments.where("transcriptId").equals(transcriptId).toArray();
     } catch (error) {
-      throw handleError(error, "DBUtils.updateTranscriptStatus");
+      throw handleError(error, "DBUtils.getSegmentsByTranscriptId");
     }
   },
 
-  /**
-   * Add segments
-   */
+  async getSegmentsByTranscriptIdOrdered(transcriptId: number): Promise<Segment[]> {
+    try {
+      return await db.segments.where("transcriptId").equals(transcriptId).sortBy("start");
+    } catch (error) {
+      throw handleError(error, "DBUtils.getSegmentsByTranscriptIdOrdered");
+    }
+  },
+
   async addSegments(
     segments: Omit<Segment, "id">[],
     options?: {
@@ -174,7 +314,7 @@ export const DBUtils = {
 
       // For small batches, use bulkAdd directly
       if (segmentsWithTimestamps.length <= 50) {
-        await db.segments.bulkAdd(segmentsWithTimestamps as Segment[]);
+        await this.bulkAdd(db.segments, segmentsWithTimestamps);
         return;
       }
 
@@ -182,7 +322,7 @@ export const DBUtils = {
       const batchSize = options?.batchSize || 50;
       for (let i = 0; i < segmentsWithTimestamps.length; i += batchSize) {
         const batch = segmentsWithTimestamps.slice(i, i + batchSize);
-        await db.segments.bulkAdd(batch as Segment[]);
+        await this.bulkAdd(db.segments, batch);
 
         // Simple progress reporting
         if (options?.onProgress) {
@@ -195,7 +335,7 @@ export const DBUtils = {
             total: segmentsWithTimestamps.length,
             percentage: progress,
             status: "processing",
-            message: `处理中 ${i + batch.length}/${segmentsWithTimestamps.length}`,
+            message: `Processing ${i + batch.length}/${segmentsWithTimestamps.length}`,
           });
         }
       }
@@ -204,20 +344,34 @@ export const DBUtils = {
     }
   },
 
-  /**
-   * Get segments by transcript ID
-   */
-  async getSegmentsByTranscriptId(transcriptId: number): Promise<Segment[]> {
+  async updateSegmentsByTranscriptId(
+    transcriptId: number,
+    updates: Partial<Segment>,
+  ): Promise<number> {
     try {
-      return await db.segments.where("transcriptId").equals(transcriptId).toArray();
+      return await db.segments.where("transcriptId").equals(transcriptId).modify(updates);
     } catch (error) {
-      throw handleError(error, "DBUtils.getSegmentsByTranscriptId");
+      throw handleError(error, "DBUtils.updateSegmentsByTranscriptId");
     }
   },
 
-  /**
-   * Clear all data
-   */
+  async findSegmentsByTimeRange(
+    transcriptId: number,
+    startTime: number,
+    endTime: number,
+  ): Promise<Segment[]> {
+    try {
+      return await db.segments
+        .where("transcriptId")
+        .equals(transcriptId)
+        .and((segment) => segment.start >= startTime && segment.end <= endTime)
+        .toArray();
+    } catch (error) {
+      throw handleError(error, "DBUtils.findSegmentsByTimeRange");
+    }
+  },
+
+  /** * Database maintenance operations*/
   async clearAll(): Promise<void> {
     try {
       await db.transaction("rw", db.files, db.transcripts, db.segments, async () => {
@@ -227,6 +381,45 @@ export const DBUtils = {
       });
     } catch (error) {
       throw handleError(error, "DBUtils.clearAll");
+    }
+  },
+
+  async getDatabaseStats(): Promise<{
+    totalFiles: number;
+    totalTranscripts: number;
+    totalSegments: number;
+    totalStorageSize: number;
+    averageSegmentsPerTranscript: number;
+    transcriptsByStatus: Record<string, number>;
+  }> {
+    try {
+      const [files, transcripts, segments] = await Promise.all([
+        db.files.toArray(),
+        db.transcripts.toArray(),
+        db.segments.toArray(),
+      ]);
+
+      const totalStorageSize = files.reduce((sum, file) => sum + file.size, 0);
+      const transcriptsByStatus = transcripts.reduce(
+        (acc, transcript) => {
+          acc[transcript.status] = (acc[transcript.status] || 0) + 1;
+          return acc;
+        },
+        {} as Record<string, number>,
+      );
+      const averageSegmentsPerTranscript =
+        transcripts.length > 0 ? segments.length / transcripts.length : 0;
+
+      return {
+        totalFiles: files.length,
+        totalTranscripts: transcripts.length,
+        totalSegments: segments.length,
+        totalStorageSize,
+        averageSegmentsPerTranscript: Math.round(averageSegmentsPerTranscript * 100) / 100,
+        transcriptsByStatus,
+      };
+    } catch (error) {
+      throw handleError(error, "DBUtils.getDatabaseStats");
     }
   },
 };

@@ -32,7 +32,7 @@ export interface ErrorStats {
   errorsBySeverity: Record<string, number>;
   lastErrorTime?: number;
   errorFrequency: number;
-  errorRate: number; // 错误率 (每分钟)
+  errorRate: number; // Error率 (每minutes)
 }
 
 export interface ErrorMonitor {
@@ -50,10 +50,10 @@ export enum LogLevel {
 }
 
 export enum ErrorSeverity {
-  CRITICAL = "critical", // 严重错误，影响核心功能
-  HIGH = "high", // 高优先级错误
-  MEDIUM = "medium", // 中等错误
-  LOW = "low", // 低优先级错误
+  CRITICAL = "critical", // 严重Error，影响corefunctionality
+  HIGH = "high", // 高优先级Error
+  MEDIUM = "medium", // in等Error
+  LOW = "low", // 低优先级Error
 }
 
 export enum ErrorCategory {
@@ -70,47 +70,47 @@ export enum ErrorCategory {
 }
 
 export const ErrorCodes = {
-  // 数据库错误
+  // databaseError
   dbConnectionFailed: "DB_CONNECTION_FAILED",
   dbQueryFailed: "DB_QUERY_FAILED",
   dbRecordNotFound: "DB_RECORD_NOT_FOUND",
   dbMigrationFailed: "DB_MIGRATION_FAILED",
   dbIntegrityError: "DB_INTEGRITY_ERROR",
 
-  // API 错误
+  // API Error
   apiValidationError: "API_VALIDATION_ERROR",
   apiAuthError: "API_AUTH_ERROR",
   apiRateLimit: "API_RATE_LIMIT",
   apiTimeout: "API_TIMEOUT",
 
-  // 文件处理错误
+  // FileProcessError
   fileUploadFailed: "FILE_UPLOAD_FAILED",
   fileNotFound: "FILE_NOT_FOUND",
   fileProcessingError: "FILE_PROCESSING_ERROR",
 
-  // 转录处理错误
+  // TranscriptionProcessError
   transcriptionFailed: "TRANSCRIPTION_FAILED",
   transcriptionTimeout: "TRANSCRIPTION_TIMEOUT",
   postProcessingFailed: "POST_PROCESSING_FAILED",
 
-  // 音频处理错误
+  // AudioProcessError
   audioProcessingError: "AUDIO_PROCESSING_ERROR",
   audioFormatUnsupported: "AUDIO_FORMAT_UNSUPPORTED",
 
-  // 业务逻辑错误
+  // 业务逻辑Error
   invalidOperation: "INVALID_OPERATION",
   resourceBusy: "RESOURCE_BUSY",
   concurrencyLimit: "CONCURRENCY_LIMIT",
   fileAlreadyProcessed: "FILE_ALREADY_PROCESSED",
 
-  // 系统错误
+  // 系统Error
   internalServerError: "INTERNAL_SERVER_ERROR",
   serviceUnavailable: "SERVICE_UNAVAILABLE",
   networkError: "NETWORK_ERROR",
   configurationError: "CONFIGURATION_ERROR",
 } as const;
 
-// 错误代码配置映射
+// Error代码配置映射
 export const ErrorCodeConfig: Record<
   string,
   {
@@ -120,7 +120,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: boolean;
   }
 > = {
-  // 数据库错误配置
+  // databaseError配置
   DB_CONNECTION_FAILED: {
     severity: ErrorSeverity.CRITICAL,
     category: ErrorCategory.DATABASE,
@@ -152,7 +152,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: true,
   },
 
-  // API 错误配置
+  // API Error配置
   API_VALIDATION_ERROR: {
     severity: ErrorSeverity.LOW,
     category: ErrorCategory.VALIDATION,
@@ -178,7 +178,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: true,
   },
 
-  // 文件处理错误配置
+  // FileProcessError配置
   FILE_UPLOAD_FAILED: {
     severity: ErrorSeverity.HIGH,
     category: ErrorCategory.FILE,
@@ -198,7 +198,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: true,
   },
 
-  // 转录处理错误配置
+  // TranscriptionProcessError配置
   TRANSCRIPTION_FAILED: {
     severity: ErrorSeverity.HIGH,
     category: ErrorCategory.TRANSCRIPTION,
@@ -218,7 +218,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: true,
   },
 
-  // 音频处理错误配置
+  // AudioProcessError配置
   AUDIO_PROCESSING_ERROR: {
     severity: ErrorSeverity.HIGH,
     category: ErrorCategory.AUDIO,
@@ -232,7 +232,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: true,
   },
 
-  // 业务逻辑错误配置
+  // 业务逻辑Error配置
   INVALID_OPERATION: {
     severity: ErrorSeverity.LOW,
     category: ErrorCategory.BUSINESS,
@@ -258,7 +258,7 @@ export const ErrorCodeConfig: Record<
     userFriendly: true,
   },
 
-  // 系统错误配置
+  // 系统Error配置
   INTERNAL_SERVER_ERROR: {
     severity: ErrorSeverity.CRITICAL,
     category: ErrorCategory.SYSTEM,
@@ -287,7 +287,7 @@ export const ErrorCodeConfig: Record<
 
 export type ErrorCode = keyof typeof ErrorCodes;
 
-// 用户友好的错误消息映射
+// 用户友好Error消息映射
 export const UserFriendlyMessages: Record<string, string> = {
   DB_CONNECTION_FAILED: "数据库连接失败，请检查网络连接",
   DB_RECORD_NOT_FOUND: "请求的资源不存在",
@@ -302,12 +302,12 @@ export const UserFriendlyMessages: Record<string, string> = {
   API_VALIDATION_ERROR: "输入验证失败，请检查输入参数",
 };
 
-// 默认错误消息
+// 默认Error消息
 export const getDefaultErrorMessage = (code: string): string => {
   return UserFriendlyMessages[code] || "发生未知错误，请重试";
 };
 
-// 获取错误配置
+// GetError配置
 export const getErrorCodeConfig = (code: string) => {
   return (
     ErrorCodeConfig[code] || {
@@ -319,22 +319,22 @@ export const getErrorCodeConfig = (code: string) => {
   );
 };
 
-// 判断错误是否可重试
+// 判断Erroris否可重试
 export const isRetryableError = (code: string): boolean => {
   return getErrorCodeConfig(code).retryable;
 };
 
-// 获取错误严重程度
+// GetError严重程度
 export const getErrorSeverity = (code: string): ErrorSeverity => {
   return getErrorCodeConfig(code).severity;
 };
 
-// 获取错误分类
+// GetError分class
 export const getErrorCategory = (code: string): ErrorCategory => {
   return getErrorCodeConfig(code).category;
 };
 
-// 错误恢复策略
+// Error恢复策略
 export interface ErrorRecoveryStrategy {
   maxRetries: number;
   baseDelay: number;
@@ -344,7 +344,7 @@ export interface ErrorRecoveryStrategy {
   fallbackAction?: (error: AppError) => Promise<void>;
 }
 
-// 默认错误恢复策略
+// 默认Error恢复策略
 export const DefaultRecoveryStrategies: Record<ErrorCategory, ErrorRecoveryStrategy> = {
   [ErrorCategory.DATABASE]: {
     maxRetries: 3,

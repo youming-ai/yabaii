@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { useTranscriptionStatus } from "@/hooks/api/useTranscription";
-import { db } from "@/lib/db/db";
+import { DBUtils } from "@/lib/db/db";
 import type { FileRow, Segment, TranscriptRow } from "@/types/db/database";
 
-// 音频URL缓存管理 - 使用 WeakMap 防止内存泄漏
+// AudioURLCache管理 - 使用 WeakMap 防止Memory泄漏
 const audioUrlCache = new WeakMap<Blob, string>();
 const activeAudioUrls = new Set<string>();
 
@@ -21,20 +21,21 @@ function createAudioUrl(blob: Blob): string {
   return url;
 }
 
-// 查询键
+// Query键
 export const playerKeys = {
   all: ["player"] as const,
   file: (fileId: number) => [...playerKeys.all, "file", fileId] as const,
 };
 
-// 获取文件数据的查询
+// GetFile数据Query
 function useFileQuery(fileId: number) {
   return useQuery({
     queryKey: playerKeys.file(fileId),
     queryFn: async () => {
-      const file = await db.files.get(fileId);
+      // Through DBUtils GetFile
+      const file = await DBUtils.getFile(fileId);
       if (!file) {
-        throw new Error("文件不存在");
+        throw new Error("File not found");
       }
 
       let audioUrl: string | null = null;
@@ -59,24 +60,21 @@ interface UsePlayerDataQueryReturn {
   retry: () => void;
 }
 
-/**
- * 播放器数据查询 Hook - 简化版
- * 只负责获取文件和转录数据
- */
+/** * 播放器数据Query Hook - Simplified版 * 只负责GetFile和Transcription数据*/
 export function usePlayerDataQuery(fileId: string): UsePlayerDataQueryReturn {
   const parsedFileId = parseInt(fileId, 10);
 
-  // 获取文件数据
+  // GetFile数据
   const fileQuery = useFileQuery(parsedFileId);
   const file = fileQuery.data?.file || null;
   const audioUrl = fileQuery.data?.audioUrl || null;
 
-  // 获取转录状态
+  // GetTranscriptionstate
   const transcriptionQuery = useTranscriptionStatus(parsedFileId);
   const transcript = transcriptionQuery.data?.transcript || null;
   const segments = transcriptionQuery.data?.segments || [];
 
-  // 只等待文件加载完成
+  // 只等待File加载完成
   const loading = fileQuery.isLoading;
   const error = fileQuery.error?.message || null;
 

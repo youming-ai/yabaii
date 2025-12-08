@@ -1,7 +1,4 @@
-/**
- * 播放器页面
- * 简化版本 - 转录操作在文件主页处理
- */
+/** * 播放器页面 * Simplified版本 - Transcriptionoperations在File主页Process*/
 
 "use client";
 

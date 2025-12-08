@@ -83,7 +83,7 @@ export default function PWARegister() {
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt as EventListener);
     window.addEventListener("appinstalled", handleAppInstalled);
 
-    // Check if app is already installed
+    // Check if app i already installed
     if (window.matchMedia("(display-mode: standalone)").matches) {
       setShowInstallButton(false);
     }

@@ -1,7 +1,4 @@
-/**
- * 优化的后处理模块
- * 提供高性能的segments处理，支持智能分类、并发控制和批处理
- */
+/** * 优化后Process模块 * 提供高性能segmentsProcess，支持智能分class、并发控制和批Process*/
 
 import Groq from "groq-sdk";
 
@@ -46,9 +43,7 @@ class OptimizedPostProcessor {
     this.groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
   }
 
-  /**
-   * 主要处理入口 - 智能分类和并行处理
-   */
+  /** * 主要Process入口 - 智能分class和并行Process*/
   async processSegments(
     segments: Segment[],
     sourceLanguage: string,
@@ -59,7 +54,7 @@ class OptimizedPostProcessor {
 
     console.log(`🚀 开始优化后处理: ${segments.length} segments`);
 
-    // 智能文本分类
+    // 智能文本分class
     const categorizedSegments = this.categorizeSegments(segments);
     console.log(
       `文本分类: 极短 ${categorizedSegments.ultraShort.length}, ` +
@@ -68,7 +63,7 @@ class OptimizedPostProcessor {
         `长 ${categorizedSegments.long.length}`,
     );
 
-    // 并行处理所有类别
+    // 并行Process所有class别
     const processingPromises = [
       this.processUltraShortTexts(categorizedSegments.ultraShort, sourceLanguage, finalOptions),
       this.processShortTexts(categorizedSegments.short, sourceLanguage, finalOptions),
@@ -104,9 +99,7 @@ class OptimizedPostProcessor {
     return orderedResults;
   }
 
-  /**
-   * 智能文本分类
-   */
+  /** * 智能文本分class*/
   private categorizeSegments(segments: Segment[]) {
     const ULTRA_SHORT_THRESHOLD = 15;
     const SHORT_THRESHOLD = 50;
@@ -124,9 +117,7 @@ class OptimizedPostProcessor {
     };
   }
 
-  /**
-   * 处理极短文本 - 超大批量
-   */
+  /** * Process极短文本 - 超大batch*/
   private async processUltraShortTexts(
     segments: Segment[],
     sourceLanguage: string,
@@ -146,9 +137,7 @@ class OptimizedPostProcessor {
     return results;
   }
 
-  /**
-   * 处理短文本 - 并行批量
-   */
+  /** * Process短文本 - 并行batch*/
   private async processShortTexts(
     segments: Segment[],
     sourceLanguage: string,
@@ -166,7 +155,7 @@ class OptimizedPostProcessor {
       batches.push(segments.slice(i, i + BATCH_SIZE));
     }
 
-    // 并行处理批次
+    // 并行Process批次
     for (let i = 0; i < batches.length; i += CONCURRENT_BATCHES) {
       const currentBatches = batches.slice(i, i + CONCURRENT_BATCHES);
       const batchPromises = currentBatches.map((batch) =>
@@ -180,7 +169,7 @@ class OptimizedPostProcessor {
         }
       });
 
-      // 微小延迟
+      // 微小delay
       if (i + CONCURRENT_BATCHES < batches.length) {
         await new Promise((resolve) => setTimeout(resolve, 20));
       }
@@ -189,9 +178,7 @@ class OptimizedPostProcessor {
     return results;
   }
 
-  /**
-   * 处理中等长度文本 - 适中的并发
-   */
+  /** * Processin等长度文本 - 适in并发*/
   private async processMediumTexts(
     segments: Segment[],
     sourceLanguage: string,
@@ -218,9 +205,7 @@ class OptimizedPostProcessor {
     return results;
   }
 
-  /**
-   * 处理长文本 - 保守并发
-   */
+  /** * Process长文本 - 保守并发*/
   private async processLongTexts(
     segments: Segment[],
     sourceLanguage: string,
@@ -232,7 +217,7 @@ class OptimizedPostProcessor {
     const chunks = this.chunkArray(segments, Math.ceil(segments.length / CONCURRENT));
 
     const chunkPromises = chunks.map(
-      (chunk) => this.processChunkSequentially(chunk, sourceLanguage, options, 100), // 长文本增加延迟
+      (chunk) => this.processChunkSequentially(chunk, sourceLanguage, options, 100), // 长文本增加delay
     );
 
     const chunkResults = await Promise.allSettled(chunkPromises);
@@ -247,9 +232,7 @@ class OptimizedPostProcessor {
     return results;
   }
 
-  /**
-   * 优化的批量处理
-   */
+  /** * 优化batchProcess*/
   private async processBatchOptimized(
     segments: Segment[],
     sourceLanguage: string,
@@ -298,9 +281,7 @@ class OptimizedPostProcessor {
     }
   }
 
-  /**
-   * 顺序处理块
-   */
+  /** * 顺序Process块*/
   private async processChunkSequentially(
     segments: Segment[],
     sourceLanguage: string,
@@ -319,7 +300,7 @@ class OptimizedPostProcessor {
         results.push(this.createFallbackResult(segment));
       }
 
-      // 添加延迟以避免API限流
+      // Adddelay以避免API限流
       if (i < segments.length - 1 && delay > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
@@ -328,9 +309,7 @@ class OptimizedPostProcessor {
     return results;
   }
 
-  /**
-   * 处理单个segment
-   */
+  /** * Process单个segment*/
   private async processSingleSegment(
     segment: Segment,
     sourceLanguage: string,
@@ -365,13 +344,11 @@ class OptimizedPostProcessor {
     };
   }
 
-  /**
-   * 构建批量处理的提示
-   */
+  /** * 构建batchProcess提示*/
   private buildBatchPrompt(
     combinedText: string,
     sourceLanguage: string,
-    options: Required<PostProcessOptions>,
+    _options: Required<PostProcessOptions>,
   ): string {
     return `Process these ${sourceLanguage} text segments for language learning:
 
@@ -391,9 +368,7 @@ Return JSON:
 }`;
   }
 
-  /**
-   * 构建单个segment的提示
-   */
+  /** * 构建单个segment提示*/
   private buildSinglePrompt(
     text: string,
     sourceLanguage: string,
@@ -418,9 +393,7 @@ Return JSON:
     return prompt;
   }
 
-  /**
-   * 解析批量响应
-   */
+  /** * 解析batchresponse*/
   private parseBatchResponse(responseText: string, segmentCount: number) {
     try {
       let cleanedText = responseText.trim();
@@ -445,9 +418,7 @@ Return JSON:
     }
   }
 
-  /**
-   * 解析单个响应
-   */
+  /** * 解析单个response*/
   private parseSingleResponse(responseText: string) {
     try {
       let cleanedText = responseText.trim();
@@ -469,9 +440,7 @@ Return JSON:
     }
   }
 
-  /**
-   * 创建fallback结果
-   */
+  /** * 创建fallback结果*/
   private createFallbackResults(segments: Segment[]): ProcessedSegment[] {
     return segments.map((segment) => this.createFallbackResult(segment));
   }
@@ -488,9 +457,7 @@ Return JSON:
     };
   }
 
-  /**
-   * 保持原始顺序
-   */
+  /** * 保持原始顺序*/
   private maintainOriginalOrder(
     originalSegments: Segment[],
     processedResults: ProcessedSegment[],
@@ -506,9 +473,7 @@ Return JSON:
     });
   }
 
-  /**
-   * 数组分块
-   */
+  /** * 数组分块*/
   private chunkArray<T>(array: T[], chunkSize: number): T[][] {
     const chunks: T[][] = [];
     for (let i = 0; i < array.length; i += chunkSize) {

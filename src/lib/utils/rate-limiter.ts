@@ -1,59 +1,50 @@
-/**
- * 基于滑动窗口的 API 限流器
- * 使用内存存储，适用于单实例部署
- *
- * 特点：
- * - 滑动窗口算法，更平滑的限流
- * - 支持按 IP 或自定义 key 限流
- * - 自动清理过期数据
- * - 提供限流状态信息
- */
+/** * 基于滑动窗口 API 限流器 * 使用Memory存储，适Used for单实例部署 * * 特点： * - 滑动窗口算法，更平滑限流 * - 支持按 IP 或自定义 key 限流 * - 自动清理过期数据 * - 提供限流state信息*/
 
 export interface RateLimitConfig {
-  /** 时间窗口大小（毫秒） */
+  /** 时间窗口size（毫seconds）*/
   windowMs: number;
-  /** 窗口内最大请求数 */
+  /** 窗口内最大request数*/
   maxRequests: number;
-  /** 限流消息 */
+  /** 限流消息*/
   message?: string;
 }
 
 export interface RateLimitResult {
-  /** 是否被限流 */
+  /** i否被限流*/
   limited: boolean;
-  /** 剩余请求数 */
+  /** 剩余request数*/
   remaining: number;
-  /** 限制总数 */
+  /** 限制总数*/
   limit: number;
-  /** 重置时间（Unix 时间戳，秒） */
+  /** 重置时间（Unix 时间戳，seconds）*/
   resetTime: number;
-  /** 重试等待时间（秒） */
+  /** 重试等待时间（seconds）*/
   retryAfter?: number;
 }
 
 interface RateLimitEntry {
-  /** 请求时间戳数组 */
+  /** request时间戳数组*/
   timestamps: number[];
-  /** 首次请求时间 */
+  /** 首次request时间*/
   firstRequest: number;
 }
 
 // 默认配置
 const DEFAULT_CONFIG: RateLimitConfig = {
-  windowMs: 60 * 1000, // 1 分钟
-  maxRequests: 60, // 每分钟 60 次
+  windowMs: 60 * 1000, // 1 minutes
+  maxRequests: 60, // 每minutes 60 次
   message: "请求过于频繁，请稍后再试",
 };
 
 // API 路由专用配置（更严格）
 export const API_RATE_LIMIT_CONFIG: Record<string, RateLimitConfig> = {
-  // 转录 API - 计算密集型，限制较严
+  // Transcription API - 计算密集型，限制较严
   "/api/transcribe": {
     windowMs: 60 * 1000,
     maxRequests: 10,
     message: "转录请求过于频繁，请稍后再试",
   },
-  // 后处理 API
+  // 后Process API
   "/api/postprocess": {
     windowMs: 60 * 1000,
     maxRequests: 20,
@@ -67,23 +58,18 @@ export const API_RATE_LIMIT_CONFIG: Record<string, RateLimitConfig> = {
   },
 };
 
-/**
- * 内存限流存储
- * 使用 Map 存储每个 key 的请求记录
- */
+/** * Memory限流存储 * 使用 Map 存储每个 key requestrecord*/
 class RateLimitStore {
   private store: Map<string, RateLimitEntry> = new Map();
   private cleanupInterval: NodeJS.Timeout | null = null;
-  private readonly CLEANUP_INTERVAL = 60 * 1000; // 1 分钟清理一次
+  private readonly CLEANUP_INTERVAL = 60 * 1000; // 1 minutes清理一次
   private readonly MAX_STORE_SIZE = 10000; // 最大存储条目数
 
   constructor() {
     this.startCleanup();
   }
 
-  /**
-   * 获取或创建限流条目
-   */
+  /** * Get或创建限流条目*/
   get(key: string): RateLimitEntry {
     const existing = this.store.get(key);
     if (existing) {
@@ -98,9 +84,7 @@ class RateLimitStore {
     return entry;
   }
 
-  /**
-   * 更新限流条目
-   */
+  /** * Update限流条目*/
   set(key: string, entry: RateLimitEntry): void {
     // 防止存储过大
     if (this.store.size >= this.MAX_STORE_SIZE && !this.store.has(key)) {
@@ -109,22 +93,18 @@ class RateLimitStore {
     this.store.set(key, entry);
   }
 
-  /**
-   * 清理过期条目
-   */
+  /** * 清理过期条目*/
   cleanup(now: number, maxAge: number = 5 * 60 * 1000): void {
     const cutoff = now - maxAge;
     for (const [key, entry] of this.store.entries()) {
-      // 删除完全过期的条目
+      // Delete完全过期条目
       if (entry.timestamps.length === 0 || entry.timestamps[entry.timestamps.length - 1] < cutoff) {
         this.store.delete(key);
       }
     }
   }
 
-  /**
-   * 启动定期清理
-   */
+  /** * 启动定期清理*/
   private startCleanup(): void {
     if (typeof window === "undefined" && !this.cleanupInterval) {
       this.cleanupInterval = setInterval(() => {
@@ -133,9 +113,7 @@ class RateLimitStore {
     }
   }
 
-  /**
-   * 停止清理（用于测试）
-   */
+  /** * 停止清理（Used for测试）*/
   stopCleanup(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
@@ -143,9 +121,7 @@ class RateLimitStore {
     }
   }
 
-  /**
-   * 获取存储大小（用于监控）
-   */
+  /** * Get存储size（Used for监控）*/
   get size(): number {
     return this.store.size;
   }
@@ -154,13 +130,7 @@ class RateLimitStore {
 // 全局存储实例
 const store = new RateLimitStore();
 
-/**
- * 限流检查函数
- *
- * @param key - 限流 key（通常是 IP 地址或用户 ID）
- * @param config - 限流配置
- * @returns 限流结果
- */
+/** * 限流Check函数 * * @param key - 限流 key（通常i IP 地址或用户 ID） * @param config - 限流配置 * @returns 限流结果*/
 export function checkRateLimit(
   key: string,
   config: RateLimitConfig = DEFAULT_CONFIG,
@@ -168,13 +138,13 @@ export function checkRateLimit(
   const now = Date.now();
   const windowStart = now - config.windowMs;
 
-  // 获取该 key 的请求记录
+  // Get该 key requestrecord
   const entry = store.get(key);
 
-  // 过滤掉窗口外的请求
+  // 过滤掉窗口外request
   entry.timestamps = entry.timestamps.filter((ts) => ts > windowStart);
 
-  // 检查是否超过限制
+  // Checkis否超过限制
   const currentCount = entry.timestamps.length;
   const limited = currentCount >= config.maxRequests;
 
@@ -182,7 +152,7 @@ export function checkRateLimit(
   const oldestTimestamp = entry.timestamps[0] || now;
   const resetTime = Math.ceil((oldestTimestamp + config.windowMs) / 1000);
 
-  // 如果没有被限流，记录本次请求
+  // If没有被限流，record本次request
   if (!limited) {
     entry.timestamps.push(now);
     store.set(key, entry);
@@ -195,7 +165,7 @@ export function checkRateLimit(
     resetTime,
   };
 
-  // 如果被限流，计算重试等待时间
+  // If被限流，计算重试等待时间
   if (limited && entry.timestamps.length > 0) {
     result.retryAfter = Math.ceil((entry.timestamps[0] + config.windowMs - now) / 1000);
   }
@@ -203,9 +173,7 @@ export function checkRateLimit(
   return result;
 }
 
-/**
- * 根据路径获取限流配置
- */
+/** * 根据pathGet限流配置*/
 export function getRateLimitConfig(pathname: string): RateLimitConfig {
   // 精确匹配
   if (pathname in API_RATE_LIMIT_CONFIG) {
@@ -222,14 +190,11 @@ export function getRateLimitConfig(pathname: string): RateLimitConfig {
   return API_RATE_LIMIT_CONFIG.default;
 }
 
-/**
- * 从请求中提取客户端标识
- * 优先使用 X-Forwarded-For，其次使用 X-Real-IP
- */
+/** * 从requestin提取client标识 * 优先使用 X-Forwarded-For，其次使用 X-Real-IP*/
 export function getClientIdentifier(request: Request): string {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    // 取第一个 IP（最原始的客户端 IP）
+    // 取第一个 IP（最原始client IP）
     return forwardedFor.split(",")[0].trim();
   }
 
@@ -238,13 +203,11 @@ export function getClientIdentifier(request: Request): string {
     return realIp;
   }
 
-  // 回退到一个默认标识
+  // 回退To一个默认标识
   return "unknown";
 }
 
-/**
- * 生成限流响应头
- */
+/** * 生成限流response头*/
 export function getRateLimitHeaders(result: RateLimitResult): Record<string, string> {
   const headers: Record<string, string> = {
     "X-RateLimit-Limit": result.limit.toString(),
@@ -259,9 +222,7 @@ export function getRateLimitHeaders(result: RateLimitResult): Record<string, str
   return headers;
 }
 
-/**
- * 获取限流存储统计（用于监控）
- */
+/** * Get限流存储统计（Used for监控）*/
 export function getRateLimitStats(): { storeSize: number } {
   return {
     storeSize: store.size,

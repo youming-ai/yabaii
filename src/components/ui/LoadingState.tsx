@@ -77,7 +77,7 @@ export function LoadingState({
   );
 }
 
-// 页面级加载状态
+// 页面级加载state
 export function PageLoadingState({ text = "加载中..." }: { text?: string }) {
   return (
     <div className="flex min-h-[400px] items-center justify-center">
@@ -86,7 +86,7 @@ export function PageLoadingState({ text = "加载中..." }: { text?: string }) {
   );
 }
 
-// 组件级加载状态
+// component级加载state
 export function ComponentLoadingState({ text = "加载中..." }: { text?: string }) {
   return (
     <div className="flex min-h-[100px] items-center justify-center">
@@ -95,7 +95,7 @@ export function ComponentLoadingState({ text = "加载中..." }: { text?: string
   );
 }
 
-// 列表加载状态
+// 列table加载state
 export function ListLoadingState({ count = 3 }: { count?: number }) {
   return (
     <div className="space-y-4">
@@ -112,7 +112,7 @@ export function ListLoadingState({ count = 3 }: { count?: number }) {
   );
 }
 
-// 卡片加载状态
+// 卡片加载state
 export function CardLoadingState() {
   return (
     <div className="animate-pulse space-y-4 rounded-lg border p-4">

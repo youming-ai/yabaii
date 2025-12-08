@@ -3,7 +3,7 @@ import type { FileRow, Segment } from "@/types/db/database";
 import { DBUtils, db } from "../db";
 
 describe("DBUtils", () => {
-  // 每次测试前清空数据库
+  // 每次测试前清空database
   beforeEach(async () => {
     await DBUtils.clearAll();
   });
@@ -72,14 +72,14 @@ describe("DBUtils", () => {
         const file2 = { ...createMockFile(), name: "file2.mp3" };
 
         await DBUtils.addFile(file1);
-        // 小延迟确保时间戳不同
+        // 小delay确保时间戳不同
         await new Promise((resolve) => setTimeout(resolve, 10));
         await DBUtils.addFile(file2);
 
         const files = await DBUtils.getAllFiles();
 
         expect(files.length).toBe(2);
-        // 最新的文件应该在前面
+        // 最新File应该在前面
         expect(files[0].name).toBe("file2.mp3");
         expect(files[1].name).toBe("file1.mp3");
       });
@@ -96,10 +96,10 @@ describe("DBUtils", () => {
       });
 
       it("should delete associated transcripts and segments", async () => {
-        // 创建文件
+        // 创建File
         const fileId = await DBUtils.addFile(createMockFile());
 
-        // 创建转录记录
+        // 创建Transcriptionrecord
         const transcriptId = await DBUtils.addTranscript({
           fileId,
           status: "completed",
@@ -109,7 +109,7 @@ describe("DBUtils", () => {
           updatedAt: new Date(),
         });
 
-        // 创建字幕段
+        // 创建Subtitle段
         await DBUtils.addSegments([
           {
             transcriptId,
@@ -121,10 +121,10 @@ describe("DBUtils", () => {
           },
         ]);
 
-        // 删除文件
+        // DeleteFile
         await DBUtils.deleteFile(fileId);
 
-        // 验证关联数据也被删除
+        // Validate关联数据也被Delete
         const transcripts = await db.transcripts.where("fileId").equals(fileId).toArray();
         expect(transcripts.length).toBe(0);
 
@@ -290,7 +290,7 @@ describe("DBUtils", () => {
 
   describe("clearAll", () => {
     it("should clear all data from database", async () => {
-      // 添加一些数据
+      // Add一些数据
       const fileId = await DBUtils.addFile({
         name: "test.mp3",
         size: 1000,
@@ -309,7 +309,7 @@ describe("DBUtils", () => {
       // 清空
       await DBUtils.clearAll();
 
-      // 验证
+      // Validate
       const files = await DBUtils.getAllFiles();
       const transcripts = await db.transcripts.toArray();
       const segments = await db.segments.toArray();

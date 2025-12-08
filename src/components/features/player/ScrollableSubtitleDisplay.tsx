@@ -12,6 +12,18 @@ interface ScrollableSubtitleDisplayProps {
   className?: string;
 }
 
+// Debug: Check segments 数据
+function debugSegments(segments: Segment[]) {
+  if (segments.length > 0) {
+    console.log("🔍 Segments data check:", {
+      totalSegments: segments.length,
+      firstSegment: segments[0],
+      hasTranslation: segments.some((s) => s.translation),
+      hasNormalizedText: segments.some((s) => s.normalizedText),
+    });
+  }
+}
+
 interface FuriganaEntry {
   text: string;
   reading: string;
@@ -90,6 +102,9 @@ const ScrollableSubtitleDisplay = React.memo<ScrollableSubtitleDisplayProps>(
     const safeCurrentTime =
       Number.isFinite(currentTime) && !Number.isNaN(currentTime) ? currentTime : 0;
 
+    // Debug: 输出 segments 信息To控制台
+    debugSegments(segments);
+
     const findActiveSegmentIndex = useCallback(() => {
       return segments.findIndex(
         (segment) => safeCurrentTime >= segment.start && safeCurrentTime <= segment.end,
@@ -106,12 +121,12 @@ const ScrollableSubtitleDisplay = React.memo<ScrollableSubtitleDisplayProps>(
 
       previousActiveIndex.current = activeIndex;
 
-      // 清除之前的超时
+      // 清除之前timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      // 延迟滚动以确保DOM更新完成
+      // delay滚动以确保DOMUpdate完成
       scrollTimeoutRef.current = setTimeout(
         () => {
           if (!containerRef.current || !activeSegmentRef.current) {
@@ -143,7 +158,7 @@ const ScrollableSubtitleDisplay = React.memo<ScrollableSubtitleDisplayProps>(
           }
         },
         isPlaying ? 100 : 0,
-      ); // 播放时稍微延迟以确保平滑
+      ); // 播放时稍微delay以确保平滑
 
       return () => {
         if (scrollTimeoutRef.current) {
@@ -190,7 +205,7 @@ const ScrollableSubtitleDisplay = React.memo<ScrollableSubtitleDisplayProps>(
 
     return (
       <>
-        {/* 字幕容器 */}
+        {/*Subtitle容器*/}
         <div
           ref={containerRef}
           className={cn(
@@ -262,20 +277,25 @@ const ScrollableSubtitleDisplay = React.memo<ScrollableSubtitleDisplayProps>(
                       })}
                     </div>
                   ) : (
-                    <div className="space-y-2 text-left">
+                    <div className="space-y-1 text-left">
                       {lines.length > 0 ? (
                         lines.map((line, lineIndex) => (
                           <p
                             key={`${segment.id ?? index}-line-${lineIndex}`}
-                            className="player-subtitle-plain"
+                            className="player-subtitle-original"
                           >
                             {line}
                           </p>
                         ))
                       ) : (
-                        <p className="player-subtitle-plain text-base">{displayText}</p>
+                        <p className="player-subtitle-original">{displayText}</p>
                       )}
                     </div>
+                  )}
+
+                  {/*Translation显示 - 在原文下方，使用较小灰色字体*/}
+                  {segment.translation && (
+                    <p className="player-subtitle-translation">{segment.translation}</p>
                   )}
                 </button>
               );

@@ -1,7 +1,4 @@
-/**
- * Theme type definitions for the shadow reading project
- * Provides type safety for CSS custom properties and theme values
- */
+/** * Theme type definitions for the shadow reading project * Provides type safety for CSS custom properties and theme values*/
 
 // Base color interface
 interface BaseColor {

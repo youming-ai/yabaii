@@ -2,7 +2,7 @@ import { useCallback } from "react";
 
 export function useAudioPlayerTime() {
   const formatTime = useCallback((seconds: number) => {
-    // 处理无效值
+    // Process无效值
     if (!Number.isFinite(seconds) || seconds < 0) {
       return "0:00.00";
     }

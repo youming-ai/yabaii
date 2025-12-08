@@ -1,9 +1,6 @@
-/**
- * 简化的转录类型定义
- * 移除复杂的抽象层，保留核心功能
- */
+/** * SimplifiedTranscriptionclass型定义 * Removedcomplex抽象层，keepcorefunctionality*/
 
-// 转录片段和单词类型
+// Transcription片段和单词class型
 export interface TranscriptionSegment {
   id: number;
   start: number;
@@ -24,7 +21,7 @@ export interface ProcessedSegment extends TranscriptionSegment {
   furigana?: string;
 }
 
-// 转录结果
+// Transcription结果
 export interface TranscriptionResult {
   text: string;
   language?: string;
@@ -35,7 +32,7 @@ export interface TranscriptionResult {
   segmentsCount?: number;
 }
 
-// 转录状态
+// Transcriptionstate
 export type TranscriptionStatus =
   | "idle"
   | "queued"
@@ -45,7 +42,7 @@ export type TranscriptionStatus =
   | "cancelled"
   | "paused";
 
-// 转录选项
+// Transcription选项
 export interface TranscriptionOptions {
   language?: string;
   prompt?: string;
@@ -57,7 +54,7 @@ export interface TranscriptionOptions {
   }) => void;
 }
 
-// 转录进度
+// Transcription进度
 export interface TranscriptionProgress {
   fileId: number;
   status: TranscriptionStatus;
@@ -65,7 +62,7 @@ export interface TranscriptionProgress {
   message: string;
 }
 
-// Groq SDK 响应（verbose_json）中包含的结构
+// Groq SDK response（verbose_json）in包含结构
 export interface GroqTranscriptionWord {
   word?: string;
   start?: number;
@@ -90,7 +87,7 @@ export interface GroqTranscriptionResponse {
   [key: string]: unknown;
 }
 
-// 简化的转录任务（用于UI显示）
+// SimplifiedTranscription任务（Used forUI显示）
 export interface TranscriptionTask {
   id: string;
   fileId: number;
@@ -121,7 +118,7 @@ export interface TranscriptionTask {
   options?: TranscriptionOptions;
 }
 
-// 错误类型
+// Errorclass型
 export class TranscriptionError extends Error {
   constructor(
     message: string,

@@ -1303,6 +1303,28 @@
     color: var(--text-primary);
   }
 
+  /* 原文字幕样式 - 字体大 */
+  .player-subtitle-original {
+    @apply text-left text-2xl font-semibold leading-relaxed;
+    color: var(--text-primary);
+  }
+
+  /* 翻译字幕样式 - 字体小、灰色 */
+  .player-subtitle-translation {
+    @apply text-left text-base leading-relaxed mt-2;
+    color: var(--text-muted);
+  }
+
+  @media (max-width: 640px) {
+    .player-subtitle-original {
+      font-size: 1.25rem; /* 20px on mobile */
+    }
+    
+    .player-subtitle-translation {
+      font-size: 0.875rem; /* 14px on mobile */
+    }
+  }
+
   .player-seek {
     @apply relative h-2 w-full cursor-pointer rounded-full transition-colors duration-200;
     background-color: var(--player-track-color);

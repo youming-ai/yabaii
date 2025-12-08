@@ -43,14 +43,14 @@ describe("useFiles", () => {
     });
 
     it("should set isLoading to true during load", async () => {
-      // 让 getAllFiles 延迟返回
+      // 让 getAllFiles delay返回
       (DBUtils.getAllFiles as ReturnType<typeof vi.fn>).mockImplementation(
         () => new Promise((resolve) => setTimeout(() => resolve([]), 100)),
       );
 
       const { result } = renderHook(() => useFiles());
 
-      // 初始状态应该是 loading
+      // 初始state应该i loading
       expect(result.current.isLoading).toBe(true);
 
       await waitFor(() => {
@@ -98,7 +98,7 @@ describe("useFiles", () => {
         }),
       );
 
-      // 应该刷新文件列表
+      // 应该刷新File列table
       expect(DBUtils.getAllFiles).toHaveBeenCalledTimes(2);
     });
 
@@ -114,14 +114,14 @@ describe("useFiles", () => {
 
       const mockFile = new File(["content"], "test.mp3", { type: "audio/mpeg" });
 
-      // 验证函数抛出错误
+      // Validate函数抛出Error
       await expect(
         act(async () => {
           await result.current.addFiles([mockFile]);
         }),
       ).rejects.toThrow(errorMessage);
 
-      // 验证 addFile 被调用
+      // Validate addFile 被调用
       expect(DBUtils.addFile).toHaveBeenCalled();
     });
 
@@ -193,14 +193,14 @@ describe("useFiles", () => {
         expect(result.current.isLoading).toBe(false);
       });
 
-      // 验证函数抛出错误
+      // Validate函数抛出Error
       await expect(
         act(async () => {
           await result.current.deleteFile("1");
         }),
       ).rejects.toThrow(errorMessage);
 
-      // 验证 deleteFile 被调用
+      // Validate deleteFile 被调用
       expect(DBUtils.deleteFile).toHaveBeenCalledWith(1);
     });
   });

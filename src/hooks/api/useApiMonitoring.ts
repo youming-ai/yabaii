@@ -1,41 +1,32 @@
-/**
- * API 性能监控 Hook
- *
- * 提供 API 请求的性能监控功能：
- * - 请求耗时统计
- * - 错误率追踪
- * - 自动重试监控
- */
+/** * API 性能监控 Hook * * 提供 API request性能监控functionality： * - request耗时统计 * - Error率追踪 * - 自动重试监控*/
 
 import { useCallback, useRef } from "react";
 import { reportCustomMetric } from "@/lib/utils/web-vitals";
 
 export interface ApiMetrics {
-  /** API 端点 */
+  /** API 端点*/
   endpoint: string;
-  /** 请求方法 */
+  /** requestmethod*/
   method: string;
-  /** 响应状态码 */
+  /** responsestate码*/
   status: number;
-  /** 请求耗时（毫秒） */
+  /** request耗时（毫seconds）*/
   duration: number;
-  /** 是否成功 */
+  /** i否Success*/
   success: boolean;
-  /** 是否为重试请求 */
+  /** i否a重试request*/
   isRetry: boolean;
-  /** 重试次数 */
+  /** 重试次数*/
   retryCount: number;
-  /** 请求大小（字节） */
+  /** requestsize（字节）*/
   requestSize?: number;
-  /** 响应大小（字节） */
+  /** responsesize（字节）*/
   responseSize?: number;
-  /** 错误信息 */
+  /** Error信息*/
   error?: string;
 }
 
-/**
- * 报告 API 指标
- */
+/** * 报告 API 指标*/
 export function reportApiMetrics(metrics: ApiMetrics): void {
   reportCustomMetric("api-request", metrics.duration, {
     endpoint: metrics.endpoint,
@@ -50,9 +41,7 @@ export function reportApiMetrics(metrics: ApiMetrics): void {
   });
 }
 
-/**
- * 包装 fetch 请求，自动收集性能指标
- */
+/** * 包装 fetch request，自动收集性能指标*/
 export async function monitoredFetch(
   input: RequestInfo | URL,
   init?: RequestInit,
@@ -61,7 +50,7 @@ export async function monitoredFetch(
   const method = init?.method || "GET";
   const startTime = performance.now();
 
-  // 估算请求大小
+  // 估算requestsize
   let requestSize = 0;
   if (init?.body) {
     if (typeof init.body === "string") {
@@ -69,7 +58,7 @@ export async function monitoredFetch(
     } else if (init.body instanceof Blob) {
       requestSize = init.body.size;
     } else if (init.body instanceof FormData) {
-      // FormData 大小估算比较复杂，这里简化处理
+      // FormData size估算比较复杂，这里SimplifiedProcess
       requestSize = 0;
     }
   }
@@ -78,7 +67,7 @@ export async function monitoredFetch(
     const response = await fetch(input, init);
     const duration = performance.now() - startTime;
 
-    // 获取响应大小
+    // Getresponsesize
     const contentLength = response.headers.get("content-length");
     const responseSize = contentLength ? parseInt(contentLength, 10) : undefined;
 
@@ -114,17 +103,11 @@ export async function monitoredFetch(
   }
 }
 
-/**
- * API 性能监控 Hook
- *
- * 提供带有性能监控的 fetch 方法
- */
+/** * API 性能监控 Hook * * 提供带有性能监控 fetch method*/
 export function useApiMonitoring() {
   const retryCountRef = useRef<Map<string, number>>(new Map());
 
-  /**
-   * 带监控的 fetch 请求
-   */
+  /** * 带监控 fetch request*/
   const fetchWithMonitoring = useCallback(
     async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
@@ -137,7 +120,7 @@ export function useApiMonitoring() {
         const response = await fetch(input, init);
         const duration = performance.now() - startTime;
 
-        // 成功后重置重试计数
+        // Success后重置重试计数
         retryCountRef.current.delete(cacheKey);
 
         reportApiMetrics({
@@ -174,9 +157,7 @@ export function useApiMonitoring() {
     [],
   );
 
-  /**
-   * 测量 API 调用性能
-   */
+  /** * 测量 API 调用性能*/
   const measureApiCall = useCallback(
     async <T>(
       name: string,

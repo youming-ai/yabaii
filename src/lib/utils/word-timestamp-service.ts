@@ -1,9 +1,6 @@
 import type { Segment, WordTimestamp } from "@/types/db/database";
 
-/**
- * Generate approximate word timestamps based on segment timing and text
- * This is a simple heuristic approach - for production, use a proper ASR with word-level timestamps
- */
+/** * Generate approximate word timestamps based on segment timing and text * This i a simple heuristic approach - for production, use a proper ASR with word-level timestamps*/
 export function generateWordTimestamps(
   segmentText: string,
   segmentStart: number,
@@ -36,9 +33,7 @@ export function generateWordTimestamps(
   return timestamps;
 }
 
-/**
- * Get current word based on playback time and word timestamps
- */
+/** * Get current word based on playback time and word timestamps*/
 export function getCurrentWord(
   currentTime: number,
   wordTimestamps: WordTimestamp[],
@@ -55,9 +50,7 @@ export function getCurrentWord(
   return null;
 }
 
-/**
- * Get words around the current position for context
- */
+/** * Get words around the current position for context*/
 export function getWordContext(
   currentTime: number,
   wordTimestamps: WordTimestamp[],
@@ -93,9 +86,7 @@ export function getWordContext(
   };
 }
 
-/**
- * Calculate speaking rate (words per minute) for a segment
- */
+/** * Calculate speaking rate (words per minute) for a segment*/
 export function calculateSpeakingRate(wordTimestamps: WordTimestamp[]): number {
   if (wordTimestamps.length < 2) return 0;
 
@@ -106,9 +97,7 @@ export function calculateSpeakingRate(wordTimestamps: WordTimestamp[]): number {
   return wordTimestamps.length / durationMinutes;
 }
 
-/**
- * Find gaps between words (pauses)
- */
+/** * Find gaps between words (pauses)*/
 export function findPauses(
   wordTimestamps: WordTimestamp[],
   pauseThreshold: number = 0.3,
@@ -136,9 +125,7 @@ export function findPauses(
   return pauses;
 }
 
-/**
- * Smooth word timestamps to avoid overlapping or negative durations
- */
+/** * Smooth word timestamps to avoid overlapping or negative durations*/
 export function smoothTimestamps(wordTimestamps: WordTimestamp[]): WordTimestamp[] {
   if (wordTimestamps.length === 0) return [];
 
@@ -161,9 +148,7 @@ export function smoothTimestamps(wordTimestamps: WordTimestamp[]): WordTimestamp
   return smoothed;
 }
 
-/**
- * Convert word timestamps to SRT-like format for export
- */
+/** * Convert word timestamps to SRT-like format for export*/
 export function convertWordTimestampsToSrtFormat(wordTimestamps: WordTimestamp[]): string {
   return wordTimestamps
     .map((ts, index) => {
@@ -181,9 +166,7 @@ export function convertWordTimestampsToSrtFormat(wordTimestamps: WordTimestamp[]
     .join("\n");
 }
 
-/**
- * Merge word timestamps from multiple segments
- */
+/** * Merge word timestamps from multiple segments*/
 export function mergeWordTimestamps(segments: Segment[]): WordTimestamp[] {
   return segments
     .filter((segment) => segment.wordTimestamps && segment.wordTimestamps.length > 0)
@@ -191,9 +174,7 @@ export function mergeWordTimestamps(segments: Segment[]): WordTimestamp[] {
     .sort((a, b) => a.start - b.start);
 }
 
-/**
- * Export word timestamps to JSON
- */
+/** * Export word timestamps to JSON*/
 export function exportWordTimestampsToJson(wordTimestamps: WordTimestamp[]): string {
   return JSON.stringify(
     {
@@ -207,7 +188,7 @@ export function exportWordTimestampsToJson(wordTimestamps: WordTimestamp[]): str
   );
 }
 
-// 向后兼容的类导出
+// 向后兼容class导出
 // biome-ignore lint/complexity/noStaticOnlyClass: Backward compatibility for existing code
 export class WordTimestampService {
   static generateWordTimestamps(

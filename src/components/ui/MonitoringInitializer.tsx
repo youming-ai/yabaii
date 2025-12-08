@@ -10,7 +10,7 @@ export function MonitoringInitializer() {
     // 初始化监控服务
     const monitoringService = getMonitoringService();
 
-    // 设置错误监控
+    // SetError监控
     setErrorMonitor(monitoringService);
 
     // 初始化监控（采样率50%，避免过多数据）
@@ -28,7 +28,7 @@ export function MonitoringInitializer() {
     // 初始化 Web Vitals 监控
     initWebVitals();
 
-    // 记录页面访问
+    // record页面访问
     monitoringService.logCustomEvent("page", "load", {
       url: window.location.href,
       referrer: document.referrer,

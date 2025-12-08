@@ -21,7 +21,7 @@ const AudioControls = React.memo<AudioControlsProps>(
 
     return (
       <div className={`flex items-center ${compact ? "space-x-1" : "space-x-4"}`}>
-        {/* Skip back */}
+        {/*Skip back*/}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -41,7 +41,7 @@ const AudioControls = React.memo<AudioControlsProps>(
           </Tooltip>
         </TooltipProvider>
 
-        {/* Play/Pause */}
+        {/*Play/Pause*/}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -60,7 +60,7 @@ const AudioControls = React.memo<AudioControlsProps>(
           </Tooltip>
         </TooltipProvider>
 
-        {/* Skip forward */}
+        {/*Skip forward*/}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>

@@ -1,7 +1,4 @@
-/**
- * API 类型定义
- * 统一的 API 响应格式和错误处理类型
- */
+/** * API class型定义 * 统一 API response格式和ErrorProcessclass型*/
 
 export interface ApiResponse<T = unknown> {
   success: boolean;
@@ -48,8 +45,8 @@ export interface TranscriptionResponseData {
   };
 }
 
-// TranscriptionSegment 和 ProcessedSegment 已移至 types/transcription.ts 以避免重复
-// 从 types/transcription.ts 重新导出以保持向后兼容
+// TranscriptionSegment 和 ProcessedSegment 已移至 types/transcription.t 以避免重复
+// 从 types/transcription.t 重新导出以保持向后兼容
 export type { ProcessedSegment, TranscriptionSegment } from "./transcription";
 
 export interface TranscriptionWord {

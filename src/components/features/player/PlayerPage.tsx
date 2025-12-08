@@ -14,6 +14,8 @@ import ApiKeyError from "@/components/ui/ApiKeyError";
 import { usePlayerDataQuery } from "@/hooks/player/usePlayerDataQuery";
 import { useAudioPlayer } from "@/hooks/ui/useAudioPlayer";
 import { isApiKeyError } from "@/lib/utils/error-handler";
+// 引入手动后Process工具，使其在浏览器控制台可用
+import "@/lib/utils/manual-postprocess";
 import type { Segment } from "@/types/db/database";
 
 export default function PlayerPageComponent({ fileId }: { fileId: string }) {
@@ -203,7 +205,7 @@ export default function PlayerPageComponent({ fileId }: { fileId: string }) {
   }
 
   if (error) {
-    // 检查是否为API密钥错误
+    // Checkis否asAPI密钥Error
     if (isApiKeyError(error)) {
       return <ApiKeyError onRetry={retry} />;
     }

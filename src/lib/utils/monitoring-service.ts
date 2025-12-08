@@ -1,11 +1,8 @@
-/**
- * 监控服务模块
- * 提供系统监控、性能跟踪和日志记录功能
- */
+/** * 监控服务模块 * 提供系统监控、性能跟踪和日志recordfunctionality*/
 
 import type { AppError, ErrorContext, ExtendedErrorMonitor } from "./error-handler";
 
-// 性能指标接口
+// 性能指标API
 export interface PerformanceMetrics {
   timestamp: number;
   pageLoad: number;
@@ -17,7 +14,7 @@ export interface PerformanceMetrics {
   largestContentfulPaint?: number;
 }
 
-// 用户行为接口
+// 用户行asAPI
 export interface UserAction {
   id: string;
   timestamp: number;
@@ -39,7 +36,7 @@ export interface ResourceMetrics {
   status: number;
 }
 
-// 自定义事件接口
+// 自定义事件API
 export interface CustomEvent {
   id: string;
   timestamp: number;
@@ -49,7 +46,7 @@ export interface CustomEvent {
   metadata?: Record<string, unknown>;
 }
 
-// 监控配置接口
+// 监控配置API
 export interface MonitoringConfig {
   enabled: boolean;
   sampleRate: number; // 采样率 0-1
@@ -64,7 +61,7 @@ export interface MonitoringConfig {
   apiEndpoint?: string | null;
 }
 
-// 监控数据批处理接口
+// 监控数据批ProcessAPI
 export interface MonitoringBatch {
   timestamp: number;
   sessionId: string;
@@ -89,7 +86,7 @@ const DEFAULT_MONITORING_CONFIG: Required<MonitoringConfig> = {
   sampleRate: 1.0,
   maxBatchSize: 50,
   maxQueueSize: 1000,
-  flushInterval: 30000, // 30秒
+  flushInterval: 30000, // 30seconds
   trackPerformance: true,
   trackUserActions: true,
   trackResources: true,
@@ -98,7 +95,7 @@ const DEFAULT_MONITORING_CONFIG: Required<MonitoringConfig> = {
   apiEndpoint: null as string | null,
 };
 
-// 监控服务类
+// 监控服务class
 export class MonitoringService implements ExtendedErrorMonitor {
   private config: Required<MonitoringConfig>;
   private sessionId: string;
@@ -142,11 +139,11 @@ export class MonitoringService implements ExtendedErrorMonitor {
     this.isInitialized = false;
   }
 
-  // 记录错误（实现ErrorMonitor接口）
+  // recordError（实现ErrorMonitorAPI）
   logError(error: Error | AppError, context?: ErrorContext): void {
     if (!this.shouldSample()) return;
 
-    // 将AppError转换为Error
+    // 将AppError转换asError
     const errorObj = error instanceof Error ? error : new Error(error.message);
 
     this.queue.errors.push({
@@ -161,17 +158,17 @@ export class MonitoringService implements ExtendedErrorMonitor {
     this.checkQueueSize();
   }
 
-  // 记录信息
+  // record信息
   logInfo(message: string, context?: ErrorContext): void {
     this.logCustomEvent("system", "info", { message, ...context });
   }
 
-  // 记录警告
+  // record警告
   logWarning(message: string, context?: ErrorContext): void {
     this.logCustomEvent("system", "warning", { message, ...context });
   }
 
-  // 记录用户操作
+  // record用户operations
   logUserAction(action: Omit<UserAction, "id" | "timestamp" | "url">): void {
     if (!this.config.trackUserActions || !this.shouldSample()) return;
 
@@ -186,7 +183,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
     this.checkQueueSize();
   }
 
-  // 记录自定义事件
+  // record自定义事件
   logCustomEvent(
     category: string,
     name: string,
@@ -208,7 +205,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
     this.checkQueueSize();
   }
 
-  // 记录资源加载
+  // record资源加载
   logResource(resource: Omit<ResourceMetrics, "timestamp">): void {
     if (!this.config.trackResources || !this.shouldSample()) return;
 
@@ -221,7 +218,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
     this.checkQueueSize();
   }
 
-  // 获取性能指标
+  // Get性能指标
   getPerformanceMetrics(): PerformanceMetrics | null {
     if (!this.config.trackPerformance) return null;
 
@@ -251,12 +248,12 @@ export class MonitoringService implements ExtendedErrorMonitor {
     this.clearQueue();
   }
 
-  // 获取会话ID
+  // Get会话ID
   getSessionId(): string {
     return this.sessionId;
   }
 
-  // 获取队列大小
+  // Get队列size
   getQueueSize(): number {
     return (
       this.queue.userActions.length +
@@ -266,7 +263,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
     );
   }
 
-  // 私有方法
+  // 私有method
 
   private shouldSample(): boolean {
     return Math.random() < this.config.sampleRate;
@@ -457,7 +454,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
             size: resource.transferSize || 0,
             type: this.getResourceType(resource.initiatorType),
             cached: resource.transferSize === 0,
-            status: 200, // 无法从PerformanceResourceTiming获取状态码
+            status: 200, // 无法从PerformanceResourceTimingGetstate码
           });
         }
       }
@@ -485,7 +482,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
   }
 
   private setupErrorHandling(): void {
-    // 全局错误处理
+    // 全局ErrorProcess
     window.addEventListener("error", (event) => {
       this.logError(event.error, {
         component: "global",
@@ -499,7 +496,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
       });
     });
 
-    // 未处理的Promise拒绝
+    // 未ProcessPromise拒绝
     window.addEventListener("unhandledrejection", (event) => {
       this.logError(new Error(event.reason), {
         component: "global",
@@ -539,7 +536,7 @@ export class MonitoringService implements ExtendedErrorMonitor {
 // 全局监控服务实例
 let globalMonitoringService: MonitoringService | null = null;
 
-// 获取全局监控服务
+// Get全局监控服务
 export function getMonitoringService(): MonitoringService {
   if (!globalMonitoringService) {
     globalMonitoringService = new MonitoringService();
@@ -553,13 +550,13 @@ export function initializeMonitoring(_config?: Partial<MonitoringConfig>): void 
   service.initialize();
 }
 
-// 便捷的用户操作记录函数
+// 便捷用户operationsrecord函数
 export function trackUserAction(action: Omit<UserAction, "id" | "timestamp" | "url">): void {
   const service = getMonitoringService();
   service.logUserAction(action);
 }
 
-// 便捷的自定义事件记录函数
+// 便捷自定义事件record函数
 export function trackCustomEvent(
   category: string,
   name: string,
@@ -570,7 +567,7 @@ export function trackCustomEvent(
   service.logCustomEvent(category, name, metadata, value);
 }
 
-// 便捷的性能指标获取函数
+// 便捷性能指标Get函数
 export function getPerformanceMetrics(): PerformanceMetrics | null {
   const service = getMonitoringService();
   return service.getPerformanceMetrics();

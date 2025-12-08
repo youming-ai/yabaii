@@ -1,7 +1,8 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useFiles } from "@/hooks";
-import { FileStatus } from "@/types/db/database";
+import { db } from "@/lib/db/db";
 
 interface StatsCardsProps {
   className?: string;
@@ -9,10 +10,31 @@ interface StatsCardsProps {
 
 export default function StatsCards({ className }: StatsCardsProps) {
   const { files } = useFiles();
+  const [processingCount, setProcessingCount] = useState(0);
 
   // 计算统计数据
   const totalFiles = files.length;
   const totalDuration = files.reduce((acc, file) => acc + (file.duration || 0), 0);
+
+  // Query正在ProcessinTranscription数量
+  useEffect(() => {
+    const checkProcessingStatus = async () => {
+      try {
+        const processingTranscripts = await db.transcripts
+          .where("status")
+          .equals("processing")
+          .count();
+        setProcessingCount(processingTranscripts);
+      } catch {
+        setProcessingCount(0);
+      }
+    };
+
+    checkProcessingStatus();
+    // 每 2 secondsCheck一次state
+    const interval = setInterval(checkProcessingStatus, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   // 格式化时长
   const formatDuration = (seconds: number) => {
@@ -25,13 +47,10 @@ export default function StatsCards({ className }: StatsCardsProps) {
     return `${minutes}m`;
   };
 
-  // 计算当前状态
+  // 计算当前state
   const getProcessingStatus = () => {
     if (!files || files.length === 0) return "空闲";
-
-    const processingFiles = files.filter((file) => file.status === FileStatus.TRANSCRIBING);
-
-    if (processingFiles.length > 0) return "转录中";
+    if (processingCount > 0) return "转录中";
     return "空闲";
   };
 

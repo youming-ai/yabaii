@@ -50,13 +50,13 @@ export function ThemeProvider({
     }
   }, [storageKey]);
 
-  // 应用主题到 DOM
+  // 应用主题To DOM
   useEffect(() => {
     if (!isClient) return;
 
     const root = window.document.documentElement;
 
-    // 移除所有主题类和属性
+    // Removed所有主题class和property
     root.classList.remove("light", "dark");
     root.removeAttribute("data-theme");
 
@@ -73,13 +73,13 @@ export function ThemeProvider({
       resolved = "dark";
       dataThemeValue = "high-contrast";
     } else {
-      // 手动选择的深色或浅色主题
+      // 手动选择深色或浅色主题
       resolved = theme;
       dataThemeValue = theme;
       root.classList.add(resolved);
     }
 
-    // 应用主题到 data-theme 属性
+    // 应用主题To data-theme property
     root.setAttribute("data-theme", dataThemeValue);
     setResolvedTheme(resolved);
 
@@ -107,10 +107,10 @@ export function ThemeProvider({
       const resolved = mediaQuery.matches ? "dark" : "light";
       const root = window.document.documentElement;
 
-      // 清除现有设置
+      // 清除现有Set
       root.classList.remove("light", "dark");
 
-      // 应用新的系统主题
+      // 应用新系统主题
       root.setAttribute("data-theme", resolved);
       root.classList.add(resolved);
       setResolvedTheme(resolved);
@@ -128,7 +128,7 @@ export function ThemeProvider({
 
     mediaQuery.addEventListener("change", handleChange);
 
-    // 初始检查
+    // 初始Check
     if (process.env.NODE_ENV === "development") {
       console.log("📱 System theme listener active:", {
         initialPreference: mediaQuery.matches ? "dark" : "light",
@@ -139,7 +139,7 @@ export function ThemeProvider({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme, isClient]);
 
-  // 保存主题到 localStorage
+  // Save主题To localStorage
   const handleSetTheme = (newTheme: Theme) => {
     try {
       localStorage.setItem(storageKey, newTheme);
@@ -160,7 +160,7 @@ export function ThemeProvider({
     }
   };
 
-  // 切换主题的快捷方法
+  // 切换主题快捷method
   const toggleTheme = () => {
     const nextTheme = () => {
       switch (theme) {

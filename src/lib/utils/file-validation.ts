@@ -1,7 +1,4 @@
-/**
- * 文件验证工具类
- * 提供深度文件验证功能，包括文件头检测、内容验证和安全性检查
- */
+/** * FileValidate工具class * 提供深度FileValidatefunctionality，包括File头检测、内容Validate和安全性Check*/
 
 export interface ValidationError {
   code: string;
@@ -38,9 +35,7 @@ export interface FileSignature {
   offset?: number;
 }
 
-/**
- * 支持的音频文件签名
- */
+/** * 支持AudioFile签名*/
 const AUDIO_FILE_SIGNATURES: FileSignature[] = [
   // MP3
   {
@@ -116,33 +111,29 @@ const AUDIO_FILE_SIGNATURES: FileSignature[] = [
   },
 ];
 
-/**
- * 恶意文件模式检测
- */
+/** * 恶意File模式检测*/
 const MALICIOUS_PATTERNS = [
-  // 可执行文件头
+  // 可执行File头
   [0x4d, 0x5a], // MZ - PE executable
   [0x7f, 0x45, 0x4c, 0x46], // ELF executable
   [0xfe, 0xed, 0xfa, 0xcf], // Mach-O executable
   [0xce, 0xfa, 0xed, 0xfe], // Mach-O universal binary
 
-  // 脚本文件标记
+  // 脚本File标记
   [0x3c, 0x21, 0x2d, 0x2d], // <!--
   [0x3c, 0x73, 0x63, 0x72], // <scr
   [0x3c, 0x68, 0x74, 0x6d], // <htm
   [0x23, 0x21, 0x2f, 0x62], // #!/b
   [0x23, 0x21, 0x2f, 0x75], // #!/u
 
-  // 压缩文件头（可能包含恶意内容）
+  // 压缩File头（可能包含恶意内容）
   [0x50, 0x4b, 0x03, 0x04], // ZIP
   [0x50, 0x4b, 0x05, 0x06], // ZIP (empty)
   [0x50, 0x4b, 0x07, 0x08], // ZIP (spanned)
   [0x1f, 0x8b, 0x08], // GZIP
 ];
 
-/**
- * 读取文件头用于签名检测
- */
+/** * readFile头Used for签名检测*/
 async function readFileHeader(file: File, bytesToRead: number = 32): Promise<ArrayBuffer> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -163,15 +154,13 @@ async function readFileHeader(file: File, bytesToRead: number = 32): Promise<Arr
   });
 }
 
-/**
- * 通过文件头检测实际文件类型
- */
+/** * ThroughFile头检测实际Fileclass型*/
 export async function detectFileType(file: File): Promise<{ type: string; confidence: number }> {
   try {
     const header = await readFileHeader(file);
     const headerArray = new Uint8Array(header);
 
-    // 检查恶意文件模式
+    // Check恶意File模式
     for (const pattern of MALICIOUS_PATTERNS) {
       if (headerArray.length >= pattern.length) {
         const matches = pattern.every((byte, index) => headerArray[index] === byte);
@@ -181,7 +170,7 @@ export async function detectFileType(file: File): Promise<{ type: string; confid
       }
     }
 
-    // 检查音频文件签名
+    // CheckAudioFile签名
     for (const signature of AUDIO_FILE_SIGNATURES) {
       const offset = signature.offset || 0;
       if (headerArray.length >= offset + signature.magicNumber.length) {
@@ -190,9 +179,9 @@ export async function detectFileType(file: File): Promise<{ type: string; confid
         );
 
         if (matches) {
-          // 对于某些格式，需要额外验证
+          // 对于某些格式，需要额外Validate
           if (signature.mimeType === "audio/wav") {
-            // WAV 文件需要验证 RIFF + WAVE
+            // WAV File需要Validate RIFF + WAVE
             if (headerArray.length >= 12) {
               const waveHeader = new TextDecoder().decode(headerArray.slice(8, 12));
               if (waveHeader !== "WAVE") {
@@ -206,7 +195,7 @@ export async function detectFileType(file: File): Promise<{ type: string; confid
       }
     }
 
-    // 检查是否是纯文本文件
+    // Checkis否i纯文本File
     const isText = isTextFile(headerArray);
     if (isText) {
       return { type: "text/plain", confidence: 0.8 };
@@ -218,11 +207,9 @@ export async function detectFileType(file: File): Promise<{ type: string; confid
   }
 }
 
-/**
- * 检查是否是文本文件
- */
+/** * Checkis否i文本File*/
 function isTextFile(header: Uint8Array): boolean {
-  // 简单的文本文件检测 - 大部分字节应该是可打印字符
+  // 简单文本File检测 - 大部分字节应该i可打印字符
   let textCount = 0;
   for (let i = 0; i < Math.min(header.length, 32); i++) {
     const byte = header[i];
@@ -233,13 +220,11 @@ function isTextFile(header: Uint8Array): boolean {
   return textCount > header.length * 0.8;
 }
 
-/**
- * 验证文件扩展名和实际类型是否匹配
- */
+/** * ValidateFile扩展名和实际class型i否匹配*/
 export function validateExtensionMatch(file: File, detectedType: string): ValidationError | null {
   const extension = file.name.split(".").pop()?.toLowerCase() || "";
 
-  // 查找支持该扩展名的 MIME 类型
+  // 查找支持该扩展名 MIME class型
   const expectedTypes = AUDIO_FILE_SIGNATURES.filter((sig) =>
     sig.extensions.includes(extension),
   ).map((sig) => sig.mimeType);
@@ -270,9 +255,7 @@ export function validateExtensionMatch(file: File, detectedType: string): Valida
   return null;
 }
 
-/**
- * 使用 Web Audio API 验证音频文件
- */
+/** * 使用 Web Audio API ValidateAudioFile*/
 export async function validateAudioContent(file: File): Promise<AudioProperties | ValidationError> {
   try {
     const audioContextClass =
@@ -307,7 +290,7 @@ export async function validateAudioContent(file: File): Promise<AudioProperties 
             return;
           }
 
-          // 尝试解码音频
+          // 尝试解码Audio
           const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
 
           const properties: AudioProperties = {
@@ -318,7 +301,7 @@ export async function validateAudioContent(file: File): Promise<AudioProperties 
             bitRate: Math.round((file.size * 8) / audioBuffer.duration / 1000), // 估算比特率
           };
 
-          // 验证音频属性
+          // ValidateAudioproperty
           const errors: ValidationError[] = [];
 
           if (audioBuffer.duration <= 0) {
@@ -331,7 +314,7 @@ export async function validateAudioContent(file: File): Promise<AudioProperties 
           }
 
           if (audioBuffer.duration > 7200) {
-            // 2小时限制
+            // 2hours限制
             errors.push({
               code: "AUDIO_TOO_LONG",
               message: "音频文件过长，最大支持2小时",
@@ -362,7 +345,7 @@ export async function validateAudioContent(file: File): Promise<AudioProperties 
           }
 
           if (errors.length > 0) {
-            resolve(errors[0]); // 返回第一个错误
+            resolve(errors[0]); // 返回第一个Error
           } else {
             resolve(properties);
           }
@@ -390,7 +373,7 @@ export async function validateAudioContent(file: File): Promise<AudioProperties 
         });
       };
 
-      // 限制读取大小以避免内存问题
+      // 限制readsize以避免Memory问题
       const maxSize = 50 * 1024 * 1024; // 50MB
       const readSize = Math.min(file.size, maxSize);
       reader.readAsArrayBuffer(file.slice(0, readSize));
@@ -408,26 +391,24 @@ export async function validateAudioContent(file: File): Promise<AudioProperties 
   }
 }
 
-/**
- * 安全性检查
- */
+/** * 安全性Check*/
 export async function performSecurityChecks(
   file: File,
 ): Promise<{ score: number; issues: ValidationError[] }> {
   const issues: ValidationError[] = [];
   let score = 100;
 
-  // 检查文件名安全性
+  // CheckFile名安全性
   const fileNameIssues = checkFileNameSecurity(file.name);
   issues.push(...fileNameIssues);
   score -= fileNameIssues.length * 10;
 
-  // 检查文件内容安全性
+  // CheckFile内容安全性
   const contentIssues = await checkFileContentSecurity(file);
   issues.push(...contentIssues);
   score -= contentIssues.length * 20;
 
-  // 检查文件大小
+  // CheckFilesize
   if (file.size > 100 * 1024 * 1024) {
     // 100MB
     issues.push({
@@ -439,7 +420,7 @@ export async function performSecurityChecks(
     score -= 30;
   }
 
-  // 检查文件类型安全性
+  // CheckFileclass型安全性
   const typeIssues = await checkFileTypeSecurity(file);
   issues.push(...typeIssues);
   score -= typeIssues.length * 15;
@@ -450,13 +431,11 @@ export async function performSecurityChecks(
   };
 }
 
-/**
- * 检查文件名安全性
- */
+/** * CheckFile名安全性*/
 function checkFileNameSecurity(fileName: string): ValidationError[] {
   const issues: ValidationError[] = [];
 
-  // 检查路径遍历
+  // Checkpath遍历
   if (fileName.includes("..") || fileName.includes("/") || fileName.includes("\\")) {
     issues.push({
       code: "PATH_TRAVERSAL",
@@ -466,7 +445,7 @@ function checkFileNameSecurity(fileName: string): ValidationError[] {
     });
   }
 
-  // 检查特殊字符
+  // Check特殊字符
   const specialChars = /[<>:"|?*]/;
   if (specialChars.test(fileName)) {
     issues.push({
@@ -477,7 +456,7 @@ function checkFileNameSecurity(fileName: string): ValidationError[] {
     });
   }
 
-  // 检查文件名长度
+  // CheckFile名长度
   if (fileName.length > 255) {
     issues.push({
       code: "FILENAME_TOO_LONG",
@@ -490,9 +469,7 @@ function checkFileNameSecurity(fileName: string): ValidationError[] {
   return issues;
 }
 
-/**
- * 检查文件内容安全性
- */
+/** * CheckFile内容安全性*/
 async function checkFileContentSecurity(file: File): Promise<ValidationError[]> {
   const issues: ValidationError[] = [];
 
@@ -501,7 +478,7 @@ async function checkFileContentSecurity(file: File): Promise<ValidationError[]> 
     const headerArray = new Uint8Array(header);
     const headerText = new TextDecoder().decode(headerArray).toLowerCase();
 
-    // 检查潜在的恶意内容
+    // Check潜在恶意内容
     const maliciousPatterns = [
       /<script/i,
       /javascript:/i,
@@ -527,7 +504,7 @@ async function checkFileContentSecurity(file: File): Promise<ValidationError[]> 
       }
     }
 
-    // 检查可执行代码模式
+    // Check可执行代码模式
     const executablePatterns = [
       /bin\/sh/i,
       /cmd\.exe/i,
@@ -561,9 +538,7 @@ async function checkFileContentSecurity(file: File): Promise<ValidationError[]> 
   return issues;
 }
 
-/**
- * 检查文件类型安全性
- */
+/** * CheckFileclass型安全性*/
 async function checkFileTypeSecurity(file: File): Promise<ValidationError[]> {
   const issues: ValidationError[] = [];
 
@@ -590,9 +565,7 @@ async function checkFileTypeSecurity(file: File): Promise<ValidationError[]> {
   return issues;
 }
 
-/**
- * 主要的文件验证函数
- */
+/** * 主要FileValidate函数*/
 export async function validateFileWithSecurity(file: File): Promise<ValidationResult> {
   const result: ValidationResult = {
     isValid: true,
@@ -603,7 +576,7 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
   };
 
   try {
-    // 1. 基本验证
+    // 1. 基本Validate
     if (file.size === 0) {
       result.errors.push({
         code: "EMPTY_FILE",
@@ -613,7 +586,7 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
       });
     }
 
-    // 2. 文件类型检测
+    // 2. Fileclass型检测
     const detectedType = await detectFileType(file);
     result.fileType = detectedType.type;
 
@@ -637,7 +610,7 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
       });
     }
 
-    // 3. 扩展名验证
+    // 3. 扩展名Validate
     const extensionError = validateExtensionMatch(file, detectedType.type);
     if (extensionError) {
       if (extensionError.severity === "error") {
@@ -647,7 +620,7 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
       }
     }
 
-    // 4. 音频内容验证（仅对音频文件）
+    // 4. Audio内容Validate（仅对AudioFile）
     if (detectedType.type.startsWith("audio/")) {
       const audioValidation = await validateAudioContent(file);
 
@@ -660,7 +633,7 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
       } else {
         result.audioProperties = audioValidation;
 
-        // 添加音频信息
+        // AddAudio信息
         result.info.push({
           code: "AUDIO_PROPERTIES",
           message: `音频文件验证通过 - 时长: ${formatDuration(audioValidation.duration || 0)}, 采样率: ${audioValidation.sampleRate}Hz`,
@@ -671,11 +644,11 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
       }
     }
 
-    // 5. 安全性检查
+    // 5. 安全性Check
     const securityResult = await performSecurityChecks(file);
     result.securityScore = securityResult.score;
 
-    // 分类安全问题
+    // 分class安全问题
     securityResult.issues.forEach((issue) => {
       if (issue.severity === "error") {
         result.errors.push(issue);
@@ -686,10 +659,10 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
       }
     });
 
-    // 6. 确定最终验证结果
+    // 6. 确定最终Validate结果
     result.isValid = result.errors.length === 0;
 
-    // 添加验证总结
+    // AddValidate总结
     result.info.push({
       code: "VALIDATION_SUMMARY",
       message: `文件验证完成 - 安全分数: ${securityResult.score}/100`,
@@ -719,9 +692,7 @@ export async function validateFileWithSecurity(file: File): Promise<ValidationRe
   return result;
 }
 
-/**
- * 格式化时长显示
- */
+/** * 格式化时长显示*/
 function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -734,9 +705,7 @@ function formatDuration(seconds: number): string {
   }
 }
 
-/**
- * 向后兼容的简单验证函数
- */
+/** * 向后兼容简单Validate函数*/
 export async function validateFile(file: File): Promise<{ isValid: boolean; errors: string[] }> {
   const result = await validateFileWithSecurity(file);
 

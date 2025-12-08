@@ -1,7 +1,4 @@
-/**
- * 简化的文件管理钩子
- * 移除复杂的文件上传逻辑，保留基本功能
- */
+/** * SimplifiedFile管理hook * RemovedcomplexFileupload逻辑，keep基本functionality*/
 
 import { useCallback, useEffect, useState } from "react";
 import { DBUtils } from "@/lib/db/db";
@@ -53,7 +50,7 @@ export function useFiles(): UseFilesReturn {
             type: file.type,
             blob: file,
             isChunked: false,
-            uploadedAt: now, // 使用数据库 schema 中定义的字段名
+            uploadedAt: now, // 使用database schema in定义field名
             updatedAt: now,
           };
 
@@ -77,7 +74,7 @@ export function useFiles(): UseFilesReturn {
         const id = parseInt(fileId, 10);
         if (!Number.isNaN(id)) {
           await DBUtils.deleteFile(id);
-          await loadFiles(); // 重新加载文件列表
+          await loadFiles(); // 重新加载File列table
         }
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "删除文件失败";

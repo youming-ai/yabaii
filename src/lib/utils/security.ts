@@ -1,70 +1,41 @@
-/**
- * 安全防护模块
- * 提供 HTML 净化、XSS 防护和内容安全检查功能
- */
+/** * 安全防护模块 * 提供 HTML 净化、XSS 防护和内容安全Checkfunctionality*/
 
-/**
- * 净化配置选项
- */
+/** * 净化配置选项*/
 export interface SanitizeOptions {
-  /**
-   * 允许的 HTML 标签
-   */
+  /** * 允许 HTML 标签*/
   allowedTags?: string[];
 
-  /**
-   * 允许的属性
-   */
+  /** * 允许property*/
   allowedAttributes?: Record<string, string[]>;
 
-  /**
-   * 是否允许 CSS 样式
-   */
+  /** * i否允许 CSS 样式*/
   allowStyles?: boolean;
 
-  /**
-   * 是否允许数据 URL
-   */
+  /** * i否允许数据 URL*/
   allowDataUrls?: boolean;
 
-  /**
-   * 是否移除注释
-   */
+  /** * i否Removed注释*/
   removeComments?: boolean;
 }
 
-/**
- * 安全检查结果
- */
+/** * 安全Check结果*/
 export interface SecurityCheckResult {
-  /**
-   * 是否安全
-   */
+  /** * i否安全*/
   isSafe: boolean;
 
-  /**
-   * 发现的问题
-   */
+  /** * 发现问题*/
   issues: SecurityIssue[];
 
-  /**
-   * 净化后的内容
-   */
+  /** * 净化后内容*/
   sanitizedContent?: string;
 
-  /**
-   * 安全评分 (0-100)
-   */
+  /** * 安全评分 (0-100)*/
   score: number;
 }
 
-/**
- * 安全问题类型
- */
+/** * 安全问题class型*/
 export interface SecurityIssue {
-  /**
-   * 问题类型
-   */
+  /** * 问题class型*/
   type:
     | "xss"
     | "css_injection"
@@ -73,28 +44,20 @@ export interface SecurityIssue {
     | "dangerous_attribute"
     | "malformed_html";
 
-  /**
-   * 严重程度
-   */
+  /** * 严重程度*/
   severity: "low" | "medium" | "high" | "critical";
 
-  /**
-   * 问题描述
-   */
+  /** * 问题描述*/
   description: string;
 
-  /**
-   * 问题位置（如果有）
-   */
+  /** * 问题位置（If有）*/
   position?: {
     line: number;
     column: number;
   };
 }
 
-/**
- * 默认允许的 HTML 标签（安全的语义化标签）
- */
+/** * 默认允许 HTML 标签（安全语义化标签）*/
 const DEFAULT_ALLOWED_TAGS = [
   "div",
   "span",
@@ -148,9 +111,7 @@ const DEFAULT_ALLOWED_TAGS = [
   "sup",
 ];
 
-/**
- * 默认允许的属性
- */
+/** * 默认允许property*/
 const DEFAULT_ALLOWED_ATTRIBUTES: Record<string, string[]> = {
   a: ["href", "title", "target"],
   img: ["src", "alt", "title", "width", "height", "loading"],
@@ -205,9 +166,7 @@ const DEFAULT_ALLOWED_ATTRIBUTES: Record<string, string[]> = {
   "*": ["class", "id", "data-*"],
 };
 
-/**
- * 危险标签（不允许的标签）
- */
+/** * 危险标签（不允许标签）*/
 const DANGEROUS_TAGS = [
   "script",
   "iframe",
@@ -252,9 +211,7 @@ const DANGEROUS_TAGS = [
   "track",
 ];
 
-/**
- * 危险属性（不允许的属性）
- */
+/** * 危险property（不允许property）*/
 const DANGEROUS_ATTRIBUTES = [
   "onload",
   "onerror",
@@ -328,9 +285,7 @@ const DANGEROUS_ATTRIBUTES = [
   "from",
 ];
 
-/**
- * CSS 注入模式
- */
+/** * CSS 注入模式*/
 const CSS_INJECTION_PATTERNS = [
   /expression\s*\(/i,
   /javascript\s*:/i,
@@ -342,9 +297,7 @@ const CSS_INJECTION_PATTERNS = [
   /content\s*:\s*['"]?(?:data|javascript|vbscript):/i,
 ];
 
-/**
- * HTML 实体编码
- */
+/** * HTML 实体编码*/
 const HTML_ENTITIES: Record<string, string> = {
   "&": "&amp;",
   "<": "&lt;",
@@ -354,14 +307,12 @@ const HTML_ENTITIES: Record<string, string> = {
   "/": "&#x2F;",
 };
 
-/**
- * 检查内容安全性
- */
+/** * Check内容安全性*/
 export function checkSecurity(content: string, options: SanitizeOptions = {}): SecurityCheckResult {
   const issues: SecurityIssue[] = [];
   let score = 100;
 
-  // 基本检查
+  // 基本Check
   if (!content || typeof content !== "string") {
     return {
       isSafe: true,
@@ -370,7 +321,7 @@ export function checkSecurity(content: string, options: SanitizeOptions = {}): S
     };
   }
 
-  // 检查危险标签
+  // Check危险标签
   const dangerousTagMatches = findDangerousTags(content);
   dangerousTagMatches.forEach((match) => {
     issues.push({
@@ -382,7 +333,7 @@ export function checkSecurity(content: string, options: SanitizeOptions = {}): S
     score -= 20;
   });
 
-  // 检查危险属性
+  // Check危险property
   const dangerousAttrMatches = findDangerousAttributes(content);
   dangerousAttrMatches.forEach((match) => {
     issues.push({
@@ -394,7 +345,7 @@ export function checkSecurity(content: string, options: SanitizeOptions = {}): S
     score -= 15;
   });
 
-  // 检查 CSS 注入
+  // Check CSS 注入
   if (!options.allowStyles) {
     const cssInjectionMatches = findCssInjection(content);
     cssInjectionMatches.forEach((match) => {
@@ -408,7 +359,7 @@ export function checkSecurity(content: string, options: SanitizeOptions = {}): S
     });
   }
 
-  // 检查 script 注入
+  // Check script 注入
   const scriptInjectionMatches = findScriptInjection(content);
   scriptInjectionMatches.forEach((match) => {
     issues.push({
@@ -420,7 +371,7 @@ export function checkSecurity(content: string, options: SanitizeOptions = {}): S
     score -= 25;
   });
 
-  // 检查 HTML 格式
+  // Check HTML 格式
   const malformedHtmlIssues = findMalformedHtml(content);
   malformedHtmlIssues.forEach((issue) => {
     issues.push({
@@ -444,9 +395,7 @@ export function checkSecurity(content: string, options: SanitizeOptions = {}): S
   };
 }
 
-/**
- * 净化 HTML 内容
- */
+/** * 净化 HTML 内容*/
 export function sanitizeHtml(content: string, options: SanitizeOptions = {}): string {
   if (!content || typeof content !== "string") {
     return content || "";
@@ -456,40 +405,40 @@ export function sanitizeHtml(content: string, options: SanitizeOptions = {}): st
   const allowedAttributes = { ...DEFAULT_ALLOWED_ATTRIBUTES, ...options.allowedAttributes };
   const removeComments = options.removeComments !== false;
 
-  // 基本净化：移除危险内容
+  // 基本净化：Removed危险内容
   let sanitized = content;
 
-  // 移除危险标签
+  // Removed危险标签
   DANGEROUS_TAGS.forEach((tag) => {
     const regex = new RegExp(`<${tag}\\b[^>]*>.*?<\\/${tag}>`, "gis");
     sanitized = sanitized.replace(regex, "");
 
-    // 也处理自闭合标签
+    // 也Process自闭合标签
     const selfClosingRegex = new RegExp(`<${tag}\\b[^>]*\\/>`, "gi");
     sanitized = sanitized.replace(selfClosingRegex, "");
   });
 
-  // 移除注释
+  // Removed注释
   if (removeComments) {
     sanitized = sanitized.replace(/<!--[\s\S]*?-->/g, "");
   }
 
-  // 移除危险属性
+  // Removed危险property
   DANGEROUS_ATTRIBUTES.forEach((attr) => {
     const regex = new RegExp(`${attr}\\s*=\\s*["'][^"']*["']`, "gi");
     sanitized = sanitized.replace(regex, "");
   });
 
-  // 净化允许的标签：找到所有允许的标签，净化它们的属性，保留它们
+  // 净化允许标签：找To所有允许标签，净化它们property，keep它们
   const allowedTagsRegex = new RegExp(`<(${allowedTags.join("|")})(\\b[^>]*)>`, "gi");
   const closingTagsRegex = new RegExp(`<\\/(${allowedTags.join("|")})>`, "gi");
 
-  // 临时保存净化的标签内容
+  // 临时Save净化标签内容
   const allowedTagMatches: Array<{ match: string; sanitized: string; start: number; end: number }> =
     [];
   const closingTagMatches: Array<{ match: string; start: number; end: number }> = [];
 
-  // 处理开始标签
+  // Process开始标签
   sanitized = sanitized.replace(allowedTagsRegex, (match, tag, attributes, offset) => {
     const sanitizedAttributes = sanitizeAttributes(tag, attributes, allowedAttributes);
     const sanitizedMatch = `<${tag}${sanitizedAttributes}>`;
@@ -502,7 +451,7 @@ export function sanitizeHtml(content: string, options: SanitizeOptions = {}): st
     return `__ALLOWED_TAG_${allowedTagMatches.length - 1}__`;
   });
 
-  // 处理结束标签
+  // Process结束标签
   sanitized = sanitized.replace(closingTagsRegex, (match, _tag, offset) => {
     closingTagMatches.push({
       match,
@@ -512,10 +461,10 @@ export function sanitizeHtml(content: string, options: SanitizeOptions = {}): st
     return `__CLOSING_TAG_${closingTagMatches.length - 1}__`;
   });
 
-  // 移除任何剩余的 HTML 标签
+  // Removed任何剩余 HTML 标签
   sanitized = sanitized.replace(/<[^>]+>/g, "");
 
-  // 恢复允许的标签
+  // 恢复允许标签
   allowedTagMatches.forEach((tagMatch, index) => {
     sanitized = sanitized.replace(`__ALLOWED_TAG_${index}__`, tagMatch.sanitized);
   });
@@ -527,15 +476,13 @@ export function sanitizeHtml(content: string, options: SanitizeOptions = {}): st
   return sanitized;
 }
 
-/**
- * 净化文本内容（纯文本模式）
- */
+/** * 净化文本内容（纯文本模式）*/
 export function sanitizeText(content: string): string {
   if (!content || typeof content !== "string") {
     return content || "";
   }
 
-  // 移除所有 HTML 标签
+  // Removed所有 HTML 标签
   let sanitized = content.replace(/<[^>]+>/g, "");
 
   // 解码 HTML 实体以获得纯文本
@@ -547,30 +494,25 @@ export function sanitizeText(content: string): string {
   return sanitized;
 }
 
-/**
- * 安全地设置元素内容
- */
+/** * 安全地Set元素内容*/
 export function setElementContent(
   element: HTMLElement,
   content: string,
   options: SanitizeOptions = {},
 ): void {
-  // 首先进行安全检查
+  // 首先进行安全Check
   const securityCheck = checkSecurity(content, options);
 
   if (!securityCheck.isSafe) {
-    console.warn("Security issues detected:", securityCheck.issues);
-    // 使用净化后的内容
+    // 使用净化后内容
     content = sanitizeHtml(content, options);
   }
 
-  // 使用 textContent 而不是 innerHTML
+  // 使用 textContent 而不i innerHTML
   element.textContent = content;
 }
 
-/**
- * 安全地创建元素
- */
+/** * 安全地创建元素*/
 export function createSafeElement(
   tagName: string,
   content: string,
@@ -579,34 +521,32 @@ export function createSafeElement(
 ): HTMLElement {
   const element = document.createElement(tagName);
 
-  // 设置安全的属性
+  // Set安全property
   Object.entries(attributes).forEach(([key, value]) => {
     if (isSafeAttribute(key, value)) {
       element.setAttribute(key, value);
     }
   });
 
-  // 设置安全的内容
+  // Set安全内容
   setElementContent(element, content, options);
 
   return element;
 }
 
-/**
- * 检查属性是否安全
- */
+/** * Checkpropertyis否安全*/
 export function isSafeAttribute(name: string, value: string): boolean {
-  // 检查危险属性
+  // Check危险property
   if (DANGEROUS_ATTRIBUTES.some((attr) => name.toLowerCase().includes(attr))) {
     return false;
   }
 
-  // 检查危险值
+  // Check危险值
   if (DANGEROUS_ATTRIBUTES.some((attr) => value.toLowerCase().includes(attr))) {
     return false;
   }
 
-  // 检查数据 URL
+  // Check数据 URL
   if (value.startsWith("data:") && name !== "src") {
     return false;
   }
@@ -614,9 +554,7 @@ export function isSafeAttribute(name: string, value: string): boolean {
   return true;
 }
 
-/**
- * 查找危险标签
- */
+/** * 查找危险标签*/
 function findDangerousTags(
   content: string,
 ): Array<{ tag: string; position?: { line: number; column: number } }> {
@@ -639,9 +577,7 @@ function findDangerousTags(
   return results;
 }
 
-/**
- * 查找危险属性
- */
+/** * 查找危险property*/
 function findDangerousAttributes(
   content: string,
 ): Array<{ attr: string; value: string; position?: { line: number; column: number } }> {
@@ -669,9 +605,7 @@ function findDangerousAttributes(
   return results;
 }
 
-/**
- * 查找 CSS 注入
- */
+/** * 查找 CSS 注入*/
 function findCssInjection(
   content: string,
 ): Array<{ pattern: string; position?: { line: number; column: number } }> {
@@ -693,9 +627,7 @@ function findCssInjection(
   return results;
 }
 
-/**
- * 查找脚本注入
- */
+/** * 查找脚本注入*/
 function findScriptInjection(
   content: string,
 ): Array<{ snippet: string; position?: { line: number; column: number } }> {
@@ -730,15 +662,13 @@ function findScriptInjection(
   return results;
 }
 
-/**
- * 查找格式错误的 HTML
- */
+/** * 查找格式Error HTML*/
 function findMalformedHtml(
   content: string,
 ): Array<{ description: string; position?: { line: number; column: number } }> {
   const results: Array<{ description: string; position?: { line: number; column: number } }> = [];
 
-  // 查找未闭合的标签
+  // 查找未闭合标签
   const openTags = content.match(/<([a-z][a-z0-9]*)\b[^>]*>/gi) || [];
   const closeTags = content.match(/<\/([a-z][a-z0-9]*)>/gi) || [];
 
@@ -752,9 +682,7 @@ function findMalformedHtml(
   return results;
 }
 
-/**
- * 净化属性
- */
+/** * 净化property*/
 function sanitizeAttributes(
   tagName: string,
   attributes: string,
@@ -774,7 +702,7 @@ function sanitizeAttributes(
     if (match !== null) {
       const [_fullMatch, attrName, attrValue] = match;
 
-      // 检查是否允许此属性
+      // Checkis否允许此property
       const allowedForTag = allowedAttributes[tagName] || allowedAttributes["*"] || [];
       const allowedForAll = allowedAttributes["*"] || [];
 
@@ -783,7 +711,7 @@ function sanitizeAttributes(
         allowedForAll.includes(attrName) ||
         attrName.startsWith("data-")
       ) {
-        // 额外检查属性值的安全性
+        // 额外Checkproperty值安全性
         if (isSafeAttribute(attrName, attrValue)) {
           result.push(`${attrName}="${encodeHtmlEntities(attrValue)}"`);
         }
@@ -794,25 +722,19 @@ function sanitizeAttributes(
   return result.length > 0 ? ` ${result.join(" ")}` : "";
 }
 
-/**
- * 编码 HTML 实体
- */
+/** * 编码 HTML 实体*/
 export function encodeHtmlEntities(text: string): string {
   return text.replace(/[&<>"'/]/g, (char) => HTML_ENTITIES[char] || char);
 }
 
-/**
- * 解码 HTML 实体
- */
+/** * 解码 HTML 实体*/
 function decodeHtmlEntities(text: string): string {
   const textarea = document.createElement("textarea");
   textarea.innerHTML = text;
   return textarea.value;
 }
 
-/**
- * 获取行列位置
- */
+/** * Get行列位置*/
 function getLineColumn(content: string, index: number): { line: number; column: number } {
   const lines = content.substring(0, index).split("\n");
   const line = lines.length;
@@ -821,14 +743,12 @@ function getLineColumn(content: string, index: number): { line: number; column: 
   return { line, column };
 }
 
-/**
- * 创建安全的字幕元素（专门用于字幕）
- */
+/** * 创建安全Subtitle元素（专门Used forSubtitle）*/
 export function createSafeSubtitleElement(
   content: string,
   attributes: Record<string, string> = {},
 ): HTMLElement {
-  // 字幕特定的安全配置
+  // Subtitle特定安全配置
   const subtitleOptions: SanitizeOptions = {
     allowedTags: ["div", "span", "small", "ruby", "rt", "rp", "rb", "br"],
     allowedAttributes: {
@@ -849,25 +769,23 @@ export function createSafeSubtitleElement(
   return createSafeElement("div", content, attributes, subtitleOptions);
 }
 
-/**
- * 安全的 Furigana 渲染
- */
+/** * 安全 Furigana 渲染*/
 export function renderSafeFurigana(text: string, furigana: string): string {
   if (!furigana || !furigana.trim()) {
     return encodeHtmlEntities(text);
   }
 
   try {
-    // 基本的 Furigana 格式解析（简化版本）
+    // 基本 Furigana 格式解析（Simplified版本）
     const furiganaRegex = /([^\s()]+)\(([^)]+)\)/g;
     let result = text;
 
-    // 替换 Furigana 括号格式为安全的 HTML
+    // 替换 Furigana 括号格式a安全 HTML
     result = result.replace(furiganaRegex, (_match, word, reading) => {
       return `<ruby>${encodeHtmlEntities(word)}<rt>${encodeHtmlEntities(reading)}</rt></ruby>`;
     });
 
-    // 确保最终结果是安全的
+    // 确保最终结果i安全
     return sanitizeHtml(result, {
       allowedTags: ["ruby", "rt"],
       allowedAttributes: {
@@ -875,8 +793,7 @@ export function renderSafeFurigana(text: string, furigana: string): string {
         rt: [],
       },
     });
-  } catch (error) {
-    console.warn("Furigana rendering failed:", error);
+  } catch {
     return encodeHtmlEntities(text);
   }
 }

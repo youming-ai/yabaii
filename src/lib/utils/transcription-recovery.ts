@@ -1,7 +1,4 @@
-/**
- * 转录错误恢复和重试管理器
- * 提供智能错误分类、恢复策略和重试机制
- */
+/** * TranscriptionError恢复和重试管理器 * 提供智能Error分class、恢复策略和重试机制*/
 
 export interface TranscriptionErrorContext {
   fileId: number;
@@ -21,22 +18,18 @@ export interface RecoveryStrategy {
   technicalMessage?: string;
 }
 
-/**
- * 错误分类器
- */
+/** * Error分class器*/
 export class TranscriptionErrorClassifier {
-  /**
-   * 分析错误类型并返回恢复策略
-   */
+  /** * 分析Errorclass型并返回恢复策略*/
   static classifyError(error: unknown, context: TranscriptionErrorContext): RecoveryStrategy {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const lowerMessage = errorMessage.toLowerCase();
 
-    // 网络相关错误 - 可重试
-    if (this.isNetworkError(lowerMessage)) {
+    // 网络相关Error - 可重试
+    if (TranscriptionErrorClassifier.isNetworkError(lowerMessage)) {
       return {
         canRecover: true,
-        retryDelay: this.calculateRetryDelay(context.attempt, 2000),
+        retryDelay: TranscriptionErrorClassifier.calculateRetryDelay(context.attempt, 2000),
         maxRetries: 5,
         action: "retry",
         userMessage: "网络连接不稳定，正在重试...",
@@ -44,11 +37,11 @@ export class TranscriptionErrorClassifier {
       };
     }
 
-    // API 限流错误 - 可重试，但需要更长延迟
-    if (this.isRateLimitError(lowerMessage)) {
+    // API 限流Error - 可重试，但需要更长delay
+    if (TranscriptionErrorClassifier.isRateLimitError(lowerMessage)) {
       return {
         canRecover: true,
-        retryDelay: this.calculateRetryDelay(context.attempt, 30000), // 30秒基础延迟
+        retryDelay: TranscriptionErrorClassifier.calculateRetryDelay(context.attempt, 30000), // 30seconds基础delay
         maxRetries: 3,
         action: "retry",
         userMessage: "API请求频率过高，等待后重试...",
@@ -56,11 +49,11 @@ export class TranscriptionErrorClassifier {
       };
     }
 
-    // 服务器临时错误 - 可重试
-    if (this.isTemporaryServerError(lowerMessage)) {
+    // server临时Error - 可重试
+    if (TranscriptionErrorClassifier.isTemporaryServerError(lowerMessage)) {
       return {
         canRecover: true,
-        retryDelay: this.calculateRetryDelay(context.attempt, 5000),
+        retryDelay: TranscriptionErrorClassifier.calculateRetryDelay(context.attempt, 5000),
         maxRetries: 3,
         action: "retry",
         userMessage: "服务器暂时繁忙，正在重试...",
@@ -68,20 +61,20 @@ export class TranscriptionErrorClassifier {
       };
     }
 
-    // 文件相关错误 - 不可重试，需要用户干预
-    if (this.isFileError(lowerMessage)) {
+    // File相关Error - 不可重试，需要用户干预
+    if (TranscriptionErrorClassifier.isFileError(lowerMessage)) {
       return {
         canRecover: false,
         retryDelay: 0,
         maxRetries: 0,
         action: "abort",
-        userMessage: this.getFileErrorUserMessage(lowerMessage),
+        userMessage: TranscriptionErrorClassifier.getFileErrorUserMessage(lowerMessage),
         technicalMessage: `File error: ${errorMessage}`,
       };
     }
 
-    // 认证错误 - 不可重试，需要配置修复
-    if (this.isAuthenticationError(lowerMessage)) {
+    // 认证Error - 不可重试，需要配置修复
+    if (TranscriptionErrorClassifier.isAuthenticationError(lowerMessage)) {
       return {
         canRecover: false,
         retryDelay: 0,
@@ -92,11 +85,11 @@ export class TranscriptionErrorClassifier {
       };
     }
 
-    // 超时错误 - 可重试，但增加超时时间
-    if (this.isTimeoutError(lowerMessage)) {
+    // timeoutError - 可重试，但增加timeout时间
+    if (TranscriptionErrorClassifier.isTimeoutError(lowerMessage)) {
       return {
         canRecover: true,
-        retryDelay: this.calculateRetryDelay(context.attempt, 10000),
+        retryDelay: TranscriptionErrorClassifier.calculateRetryDelay(context.attempt, 10000),
         maxRetries: 2,
         action: "retry",
         userMessage: "处理超时，正在重试...",
@@ -104,10 +97,10 @@ export class TranscriptionErrorClassifier {
       };
     }
 
-    // 未知错误 - 有限重试
+    // 未知Error - 有限重试
     return {
       canRecover: true,
-      retryDelay: this.calculateRetryDelay(context.attempt, 8000),
+      retryDelay: TranscriptionErrorClassifier.calculateRetryDelay(context.attempt, 8000),
       maxRetries: 2,
       action: "retry",
       userMessage: "遇到未知错误，正在尝试恢复...",
@@ -190,23 +183,19 @@ export class TranscriptionErrorClassifier {
 
   static calculateRetryDelay(attempt: number, baseDelay: number): number {
     // 指数退避 + 随机抖动，避免雷群效应
-    const exponentialDelay = baseDelay * Math.pow(2, attempt);
+    const exponentialDelay = baseDelay * 2 ** attempt;
     const jitter = Math.random() * 0.3 * exponentialDelay; // 30% 随机抖动
-    return Math.min(exponentialDelay + jitter, 60000); // 最大延迟60秒
+    return Math.min(exponentialDelay + jitter, 60000); // 最大delay60seconds
   }
 }
 
-/**
- * 转录重试管理器
- */
+/** * Transcription重试管理器*/
 export class TranscriptionRetryManager {
   private retryAttempts: Map<number, number> = new Map();
   private lastRetryTime: Map<number, number> = new Map();
   private failedOperations: Map<number, { error: unknown; timestamp: number }> = new Map();
 
-  /**
-   * 检查是否应该重试
-   */
+  /** * Checkis否应该重试*/
   shouldRetry(fileId: number, strategy: RecoveryStrategy): boolean {
     if (strategy.action !== "retry") {
       return false;
@@ -216,9 +205,7 @@ export class TranscriptionRetryManager {
     return currentAttempts < strategy.maxRetries;
   }
 
-  /**
-   * 增加重试计数
-   */
+  /** * 增加重试计数*/
   incrementRetry(fileId: number): number {
     const current = this.retryAttempts.get(fileId) || 0;
     const newCount = current + 1;
@@ -227,18 +214,14 @@ export class TranscriptionRetryManager {
     return newCount;
   }
 
-  /**
-   * 重置重试计数
-   */
+  /** * 重置重试计数*/
   resetRetry(fileId: number): void {
     this.retryAttempts.delete(fileId);
     this.lastRetryTime.delete(fileId);
     this.failedOperations.delete(fileId);
   }
 
-  /**
-   * 记录失败操作
-   */
+  /** * recordFailedoperations*/
   recordFailure(fileId: number, error: unknown): void {
     this.failedOperations.set(fileId, {
       error,
@@ -246,21 +229,19 @@ export class TranscriptionRetryManager {
     });
   }
 
-  /**
-   * 获取重试延迟
-   */
+  /** * Get重试delay*/
   getRetryDelay(fileId: number, strategy: RecoveryStrategy): number {
     const attempt = this.retryAttempts.get(fileId) || 0;
     const lastRetry = this.lastRetryTime.get(fileId) || 0;
     const timeSinceLastRetry = Date.now() - lastRetry;
 
-    // 计算建议延迟
+    // 计算建议delay
     const suggestedDelay = TranscriptionErrorClassifier.calculateRetryDelay(
       attempt,
       strategy.retryDelay,
     );
 
-    // 如果距离上次重试时间太短，使用剩余等待时间
+    // If距离上次重试时间太短，使用剩余等待时间
     if (timeSinceLastRetry < suggestedDelay) {
       return suggestedDelay - timeSinceLastRetry;
     }
@@ -268,16 +249,12 @@ export class TranscriptionRetryManager {
     return suggestedDelay;
   }
 
-  /**
-   * 获取失败信息
-   */
+  /** * GetFailed信息*/
   getFailureInfo(fileId: number): { error: unknown; timestamp: number } | null {
     return this.failedOperations.get(fileId) || null;
   }
 
-  /**
-   * 清理过期的失败记录
-   */
+  /** * 清理过期Failedrecord*/
   cleanup(olderThanMs: number = 24 * 60 * 60 * 1000): void {
     const cutoff = Date.now() - olderThanMs;
 
@@ -290,9 +267,7 @@ export class TranscriptionRetryManager {
     }
   }
 
-  /**
-   * 获取重试统计
-   */
+  /** * Get重试统计*/
   getRetryStats(fileId: number): {
     attempts: number;
     lastRetryTime: number | null;
@@ -309,17 +284,14 @@ export class TranscriptionRetryManager {
 // 全局重试管理器实例
 export const globalRetryManager = new TranscriptionRetryManager();
 
-/**
- * 智能重试函数
- * 带有错误分类和恢复策略的重试机制
- */
+/** * 智能重试函数 * 带有Error分class和恢复策略重试机制*/
 export async function smartRetry<T>(
   operation: () => Promise<T>,
   context: TranscriptionErrorContext,
 ): Promise<T> {
   const retryManager = globalRetryManager;
 
-  // 重置重试计数（如果这是新的尝试）
+  // 重置重试计数（If这i新尝试）
   if (context.attempt === 0) {
     retryManager.resetRetry(context.fileId);
   }
@@ -328,17 +300,17 @@ export async function smartRetry<T>(
     try {
       const result = await operation();
 
-      // 操作成功，清理重试状态
+      // operationsSuccess，清理重试state
       retryManager.resetRetry(context.fileId);
       return result;
     } catch (error) {
-      // 分类错误
+      // 分classError
       const strategy = TranscriptionErrorClassifier.classifyError(error, context);
 
-      // 记录失败
+      // recordFailed
       retryManager.recordFailure(context.fileId, error);
 
-      // 检查是否应该重试
+      // Checkis否应该重试
       if (!retryManager.shouldRetry(context.fileId, strategy)) {
         throw error;
       }
@@ -351,25 +323,23 @@ export async function smartRetry<T>(
         { fileId: context.fileId, error },
       );
 
-      // 等待重试延迟
+      // 等待重试delay
       const delay = retryManager.getRetryDelay(context.fileId, strategy);
       if (delay > 0) {
         await new Promise((resolve) => setTimeout(resolve, delay));
       }
 
-      // 更新上下文中的尝试次数
+      // Update上下文in尝试次数
       context.attempt = attempt;
       context.maxAttempts = strategy.maxRetries;
     }
   }
 }
 
-/**
- * 定期清理过期记录
- */
+/** * 定期清理过期record*/
 setInterval(
   () => {
     globalRetryManager.cleanup();
   },
   60 * 60 * 1000,
-); // 每小时清理一次
+); // 每hours清理一次

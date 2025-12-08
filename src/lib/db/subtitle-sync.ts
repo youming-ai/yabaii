@@ -220,7 +220,7 @@ function createSubtitleSynchronizer(
   };
 }
 
-// 字幕渲染的安全配置
+// Subtitle渲染安全配置
 const SUBTITLE_SANITIZE_OPTIONS: SanitizeOptions = {
   allowedTags: ["div", "span", "small", "ruby", "rt", "rp", "rb", "br"],
   allowedAttributes: {
@@ -244,15 +244,14 @@ export function renderSubtitle(subtitle: Subtitle, showTranslation: boolean = fa
 
   let renderedText = subtitle.normalizedText || subtitle.text;
 
-  // 首先进行安全检查
+  // 首先进行安全Check
   const securityCheck = checkSecurity(renderedText, SUBTITLE_SANITIZE_OPTIONS);
   if (!securityCheck.isSafe) {
-    console.warn("Subtitle content security issues:", securityCheck.issues);
     renderedText = sanitizeHtml(renderedText, SUBTITLE_SANITIZE_OPTIONS);
   }
 
   if (showTranslation && subtitle.translation) {
-    // 检查翻译内容的安全性
+    // CheckTranslation内容安全性
     const translationSecurity = checkSecurity(subtitle.translation, SUBTITLE_SANITIZE_OPTIONS);
     const safeTranslation = translationSecurity.isSafe
       ? subtitle.translation
@@ -262,10 +261,10 @@ export function renderSubtitle(subtitle: Subtitle, showTranslation: boolean = fa
   }
 
   if (subtitle.furigana) {
-    // 使用安全的 Furigana 渲染
+    // 使用安全 Furigana 渲染
     renderedText = addSafeFurigana(renderedText, subtitle.furigana);
   } else {
-    // 如果没有 Furigana，确保基本内容也是安全的
+    // If没有 Furigana，确保基本内容也i安全
     renderedText = sanitizeHtml(renderedText, SUBTITLE_SANITIZE_OPTIONS);
   }
 
@@ -278,32 +277,30 @@ function addSafeFurigana(text: string, furigana: string): string {
       return sanitizeHtml(text, SUBTITLE_SANITIZE_OPTIONS);
     }
 
-    // 检查 Furigana 内容的安全性
+    // Check Furigana 内容安全性
     const furiganaSecurity = checkSecurity(furigana, SUBTITLE_SANITIZE_OPTIONS);
     if (!furiganaSecurity.isSafe) {
-      console.warn("Furigana content security issues:", furiganaSecurity.issues);
-      // 如果 Furigana 不安全，降级为纯文本
+      // If Furigana 不安全，降级a纯文本
       return sanitizeHtml(text, SUBTITLE_SANITIZE_OPTIONS);
     }
 
-    // 使用安全的 Furigana 渲染
+    // 使用安全 Furigana 渲染
     const parsed: ParsedFurigana = parseFuriganaAuto(furigana, text);
 
-    // 对解析后的 HTML 进行最终安全检查
+    // 对解析后 HTML 进行最终安全Check
     const htmlSecurity = checkSecurity(parsed.html, SUBTITLE_SANITIZE_OPTIONS);
     const finalHtml = htmlSecurity.isSafe
       ? parsed.html
       : sanitizeHtml(parsed.html, SUBTITLE_SANITIZE_OPTIONS);
 
     return finalHtml;
-  } catch (error) {
-    console.warn("Failed to add furigana:", error);
-    // 降级为纯文本
+  } catch {
+    // 降级a纯文本
     return sanitizeHtml(text, SUBTITLE_SANITIZE_OPTIONS);
   }
 }
 
-// 保留原有的 addFurigana 函数用于向后兼容
+// keep原有 addFurigana 函数Used for向后兼容
 function _addFurigana(text: string, furigana: string): string {
   return addSafeFurigana(text, furigana);
 }
@@ -403,7 +400,7 @@ export function parseTime(timeString: string): number {
 
   const parts = timeString.split(":");
 
-  // 验证所有部分都是有效的数字
+  // Validate所有部分都i有效数字
   if (parts.some((part) => Number.isNaN(parseFloat(part)))) return 0;
 
   if (parts.length === 2) {
@@ -419,7 +416,7 @@ export function parseTime(timeString: string): number {
     return hours * 3600 + minutes * 60 + seconds;
   }
 
-  // 处理超过3个部分的情况（如 "01:01:01:01"），只取前3个部分
+  // Process超过3个部分情况（如 "01:01:01:01"），只取前3个部分
   if (parts.length > 3) {
     const hours = parseInt(parts[0], 10);
     const minutes = parseInt(parts[1], 10);
@@ -430,7 +427,7 @@ export function parseTime(timeString: string): number {
   return parseFloat(timeString);
 }
 
-// 向后兼容的类定义
+// 向后兼容class定义
 export class SubtitleSynchronizer {
   private instance: SubtitleSynchronizerInstance;
 

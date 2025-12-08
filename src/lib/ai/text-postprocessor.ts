@@ -18,17 +18,14 @@ interface ProcessedText {
   }>;
 }
 
-// AI SDK 使用内置的优化配置，无需手动管理客户端
+// AI SDK 使用内置优化配置，无需手动管理client
 
-/**
- * 使用 openai/gpt-oss-20b 模型对文本进行后处理
- * 添加 romaji 和中文翻译
- */
+/** * 使用 openai/gpt-oss-20b 模型对文本进行后Process * Add romaji 和in文Translation*/
 export async function postProcessText(
   inputText: string,
   _options: PostProcessOptions = {},
 ): Promise<ProcessedText> {
-  // 检查是否在浏览器环境中
+  // Checkis否在浏览器环境in
   if (typeof window === "undefined") {
     throw new Error("文本处理功能只能在浏览器环境中使用");
   }
@@ -54,7 +51,7 @@ export async function postProcessText(
 文本内容：
 ${inputText}`;
 
-    // 使用 Groq SDK 进行文本处理
+    // 使用 Groq SDK 进行文本Process
     const groqClient = new Groq({ apiKey: process.env.GROQ_API_KEY });
     const response = await groqClient.chat.completions.create({
       model: "openai/gpt-oss-20b",
@@ -84,19 +81,15 @@ ${inputText}`;
         processedText: inputText,
         segments: result.segments || [],
       };
-    } catch (parseError) {
-      console.error("解析响应内容失败:", parseError);
+    } catch {
       throw new Error("解析处理结果失败");
     }
   } catch (error) {
-    console.error("文本后处理失败:", error);
     throw new Error(`文本处理失败: ${error instanceof Error ? error.message : "未知错误"}`);
   }
 }
 
-/**
- * 处理转录后的完整音频片段
- */
+/** * ProcessTranscription后完整Audio片段*/
 export async function postProcessTranscription(
   segments: Array<{
     text: string;
@@ -110,7 +103,7 @@ export async function postProcessTranscription(
   try {
     const processed = await postProcessText(fullText, options);
 
-    // 将处理结果映射回原始时间段
+    // 将Process结果映射回原始时间段
     const enrichedSegments = segments.map((segment, index) => {
       const processedSegment = processed.segments[index];
       return {
@@ -127,9 +120,8 @@ export async function postProcessTranscription(
       processedText: fullText,
       segments: enrichedSegments,
     };
-  } catch (error) {
-    console.error("转录后处理失败:", error);
-    // 返回未处理的原始结果
+  } catch {
+    // 返回未Process原始结果
     return {
       originalText: fullText,
       processedText: fullText,

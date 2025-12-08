@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
     const config = getRateLimitConfig(pathname);
     const result = checkRateLimit(rateLimitKey, config);
 
-    // 如果被限流，返回 429 响应
+    // If被限流，返回 429 response
     if (result.limited) {
       return new NextResponse(
         JSON.stringify({
@@ -56,7 +56,7 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    // 正常响应，添加限流头
+    // 正常response，Add限流头
     const response = NextResponse.next();
     const rateLimitHeaders = getRateLimitHeaders(result);
     for (const [key, value] of Object.entries(rateLimitHeaders)) {
@@ -82,13 +82,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
+    /** Match all request paths except for the ones starting with: * - _next/static (static files) * - _next/image (image optimization files) * - favicon.ico (favicon file) * - public (public files)*/
     "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

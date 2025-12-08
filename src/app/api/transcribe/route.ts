@@ -7,6 +7,7 @@ import {
   mapGroqSegmentToTranscriptionSegment,
 } from "@/lib/ai/groq-transcription-utils";
 import { apiError, apiSuccess } from "@/lib/utils/api-response";
+import { apiLogger } from "@/lib/utils/logger";
 import {
   checkRateLimit,
   getClientIdentifier,
@@ -23,7 +24,7 @@ const transcribeQuerySchema = z.object({
   language: z.string().optional().default("en"),
 });
 
-// Helper function to check if object is a File-like object
+// Helper function to check if object i a File-like object
 function isFileLike(obj: unknown): obj is File {
   return (
     obj !== null &&
@@ -146,6 +147,20 @@ function validateFormData(formData: FormData) {
   return { success: true as const, data: validatedForm.data };
 }
 
+/** * 将Language代码转换a Whisper API 支持 ISO 639-1 格式 * Whisper 只支持主要Language代码，不支持地区变体（如 zh-CN, zh-TW）*/
+function normalizeLanguageCode(language: string): string {
+  // Language代码映射table
+  const languageMap: Record<string, string> = {
+    "zh-CN": "zh",
+    "zh-TW": "zh",
+    "en-US": "en",
+    "en-GB": "en",
+    auto: "auto",
+  };
+
+  return languageMap[language] || language.split("-")[0];
+}
+
 // Helper function to process transcription using Groq SDK
 async function processTranscription(
   uploadedFile: File,
@@ -173,15 +188,14 @@ async function processTranscription(
     }
   | { success: false; error: NextResponse }
 > {
-  console.log("开始处理转录请求 (Groq SDK):", {
+  apiLogger.debug("开始处理转录请求 (Groq SDK):", {
     fileName: uploadedFile.name,
     fileSize: uploadedFile.size,
     fileType: uploadedFile.type,
     language,
-    timestamp: new Date().toISOString(),
   });
 
-  // 检查 API 密钥
+  // Check API 密钥
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return {
@@ -197,55 +211,56 @@ async function processTranscription(
     };
   }
 
-  // 初始化 Groq 客户端
+  // 初始化 Groq client
   const groq = new Groq({ apiKey });
 
+  // 转换Language代码a Whisper API 支持格式
+  const normalizedLanguage = normalizeLanguageCode(language);
+
   try {
-    // 使用 Groq SDK 进行转录
-    // Groq SDK 可以直接接受 File 对象
+    // 使用 Groq SDK 进行Transcription
+    // Groq SDK 可以直接接受 File object
     const transcription = await groq.audio.transcriptions.create({
-      file: uploadedFile, // 直接使用 File 对象
+      file: uploadedFile, // 直接使用 File object
       model: "whisper-large-v3-turbo",
       temperature: 0,
       response_format: "verbose_json",
-      language: language === "auto" ? undefined : language,
+      language: normalizedLanguage === "auto" ? undefined : normalizedLanguage,
       timestamp_granularities: ["word", "segment"],
     });
 
-    // 使用类型断言访问可能的属性
+    // 使用class型断言访问可能property
     const transcriptionData = transcription as GroqTranscriptionResponse;
 
-    console.log("转录成功完成 (Groq SDK):", {
+    apiLogger.debug("转录成功完成 (Groq SDK):", {
       fileName: uploadedFile.name,
       textLength: transcriptionData.text?.length || 0,
       duration: transcriptionData.duration,
       language: transcriptionData.language,
-      // 详细调试信息
-      transcriptionKeys: Object.keys(transcriptionData),
     });
 
-    // 处理 Groq SDK 返回的转录结果
+    // Process Groq SDK 返回Transcription结果
     let processedSegments: TranscriptionSegment[] = [];
 
     if (Array.isArray(transcriptionData.segments) && transcriptionData.segments.length > 0) {
-      // 使用 Groq SDK 返回的 segments
+      // 使用 Groq SDK 返回 segments
       processedSegments = transcriptionData.segments.map((segment, index) =>
         mapGroqSegmentToTranscriptionSegment(segment, index + 1),
       );
-      console.log("使用 Groq SDK 返回的 segments:", processedSegments.length);
+      apiLogger.debug("使用 Groq SDK 返回的 segments:", processedSegments.length);
     } else if (Array.isArray(transcriptionData.words) && transcriptionData.words.length > 0) {
-      // 如果没有 segments 但有 words，根据 words 生成 segments
-      console.log("Groq SDK 未返回 segments，根据 words 生成");
+      // If没有 segments 但有 words，根据 words 生成 segments
+      apiLogger.debug("Groq SDK 未返回 segments，根据 words 生成");
       processedSegments = buildSegmentsFromWords(transcriptionData.words, 10);
-      console.log("根据 words 生成的 segments:", processedSegments.length);
+      apiLogger.debug("根据 words 生成的 segments:", processedSegments.length);
     } else if (typeof transcriptionData.text === "string" && transcriptionData.text.length > 0) {
-      // 生成基本的segments：按句子分割
-      console.log("Groq SDK 未返回详细数据，生成基本 segments");
+      // 生成基本segments：按句子分割
+      apiLogger.debug("Groq SDK 未返回详细数据，生成基本 segments");
       processedSegments = buildSegmentsFromPlainText(
         transcriptionData.text,
         transcriptionData.duration,
       );
-      console.log("生成的基本 segments:", processedSegments.length);
+      apiLogger.debug("生成的基本 segments:", processedSegments.length);
     }
 
     const transcriptionResponse = {
@@ -257,18 +272,15 @@ async function processTranscription(
 
     return { success: true as const, data: transcriptionResponse };
   } catch (transcriptionError) {
-    console.error("转录处理失败 (Groq SDK):", {
+    apiLogger.error("转录处理失败 (Groq SDK):", {
       fileName: uploadedFile.name,
       error:
         transcriptionError instanceof Error
           ? transcriptionError.message
           : String(transcriptionError),
-      errorType:
-        transcriptionError instanceof Error ? transcriptionError.constructor.name : "Unknown",
-      timestamp: new Date().toISOString(),
     });
 
-    // 处理不同类型的错误
+    // Process不同class型Error
     let errorMessage = "转录失败";
     let statusCode = 500;
     let errorCode = "TRANSCRIPTION_ERROR";
@@ -318,7 +330,7 @@ async function processTranscription(
 
 export async function POST(request: NextRequest) {
   try {
-    // 速率限制检查
+    // 速率限制Check
     const clientId = getClientIdentifier(request);
     const rateLimitConfig = getRateLimitConfig("/api/transcribe");
     const rateLimitResult = checkRateLimit(`transcribe:${clientId}`, rateLimitConfig);
@@ -369,7 +381,7 @@ export async function POST(request: NextRequest) {
       meta: formValidation.data.meta,
     });
   } catch (error) {
-    // 安全处理错误 - 避免暴露敏感信息
+    // 安全ProcessError - 避免暴露敏感信息
     const isProduction = process.env.NODE_ENV === "production";
 
     return apiError({

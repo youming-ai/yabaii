@@ -1,7 +1,4 @@
-/**
- * 简洁的转录loading组件
- * 用于替代复杂的状态面板，专注于loading状态
- */
+/** * 简洁Transcriptionloadingcomponent * Used for替代complexstate面板，专注于loadingstate*/
 
 "use client";
 
@@ -109,7 +106,7 @@ export function TranscriptionLoading({
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
-      {/* 状态指示器 */}
+      {/*state指示器*/}
       <div className="flex items-center gap-2">
         <Icon
           className={cn("h-4 w-4", status.color, task.status === "processing" && "animate-spin")}
@@ -117,7 +114,7 @@ export function TranscriptionLoading({
         {showMessage && <span className={cn("text-sm", status.color)}>{status.message}</span>}
       </div>
 
-      {/* 进度条 - 仅在处理中时显示 */}
+      {/*进度条 - 仅在Processin时显示*/}
       {status.showProgress && (
         <div className="space-y-1">
           <Progress value={status.progress} className="h-1 w-full" />
@@ -131,7 +128,7 @@ export function TranscriptionLoading({
         </div>
       )}
 
-      {/* 简化的文件信息 */}
+      {/*SimplifiedFile信息*/}
       {!compact && (
         <div className="text-xs text-gray-500">
           <div>{task.fileName}</div>
@@ -142,7 +139,7 @@ export function TranscriptionLoading({
   );
 }
 
-// 更简洁的版本，仅显示最基本的状态
+// 更简洁版本，仅显示最基本state
 export function TranscriptionStatusMinimal({
   task,
   className,

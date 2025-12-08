@@ -1,6 +1,4 @@
-/**
- * 重试机制工具 - 提供弹性重试和指数退避功能
- */
+/** * 重试机制工具 - 提供弹性重试和指数退避functionality*/
 
 export interface RetryOptions {
   maxAttempts?: number;
@@ -19,9 +17,7 @@ export interface RetryResult<T> {
   attempts: number;
 }
 
-/**
- * 默认重试配置
- */
+/** * 默认重试配置*/
 const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
   maxAttempts: 3,
   baseDelay: 1000,
@@ -40,9 +36,7 @@ const DEFAULT_RETRY_OPTIONS: Required<RetryOptions> = {
   shouldRetry: (_error) => true,
 };
 
-/**
- * 计算退避延迟
- */
+/** * 计算退避delay*/
 function calculateDelay(
   attempt: number,
   baseDelay: number,
@@ -53,16 +47,14 @@ function calculateDelay(
   return Math.min(delay, maxDelay);
 }
 
-/**
- * 判断错误是否可重试
- */
+/** * 判断Erroris否可重试*/
 function isRetryableError(error: Error, options: Required<RetryOptions>): boolean {
   // 使用自定义判断函数
   if (options.shouldRetry && !options.shouldRetry(error)) {
     return false;
   }
 
-  // 检查错误类型
+  // CheckErrorclass型
   if (Array.isArray(options.retryableErrors)) {
     const errorMessage = error.message.toUpperCase();
     const errorCode = (error as { code?: string }).code?.toUpperCase();
@@ -72,7 +64,7 @@ function isRetryableError(error: Error, options: Required<RetryOptions>): boolea
     );
   }
 
-  // 使用自定义错误判断函数
+  // 使用自定义Error判断函数
   if (typeof options.retryableErrors === "function") {
     return options.retryableErrors(error);
   }
@@ -80,9 +72,7 @@ function isRetryableError(error: Error, options: Required<RetryOptions>): boolea
   return true;
 }
 
-/**
- * 带重试机制的异步函数执行
- */
+/** * 带重试机制异步函数执行*/
 export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {},
@@ -101,7 +91,7 @@ export async function withRetry<T>(
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
 
-      // 如果这是最后一次尝试或错误不可重试，直接返回失败
+      // If这i最后一次尝试或Error不可重试，直接返回Failed
       if (attempt === config.maxAttempts || !isRetryableError(lastError, config)) {
         return {
           success: false,
@@ -110,7 +100,7 @@ export async function withRetry<T>(
         };
       }
 
-      // 计算延迟时间
+      // 计算delay时间
       const delay = calculateDelay(
         attempt,
         config.baseDelay,
@@ -121,7 +111,7 @@ export async function withRetry<T>(
       // 调用重试回调
       config.onRetry(lastError, attempt);
 
-      // 等待延迟
+      // 等待delay
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
@@ -133,9 +123,7 @@ export async function withRetry<T>(
   };
 }
 
-/**
- * 创建重试包装器
- */
+/** * 创建重试包装器*/
 export function createRetryWrapper<T extends unknown[], R>(
   fn: (...args: T) => Promise<R>,
   options: RetryOptions = {},
@@ -143,9 +131,7 @@ export function createRetryWrapper<T extends unknown[], R>(
   return async (...args: T): Promise<RetryResult<R>> => withRetry(() => fn(...args), options);
 }
 
-/**
- * 带重试的 fetch 函数
- */
+/** * 带重试 fetch 函数*/
 export async function fetchWithRetry(
   url: string,
   options?: RequestInit & { retryOptions?: RetryOptions },
@@ -170,9 +156,7 @@ export async function fetchWithRetry(
   return result.data;
 }
 
-/**
- * 断路器模式实现
- */
+/** * 断路器模式实现*/
 export class CircuitBreaker {
   private failureCount = 0;
   private lastFailureTime = 0;
@@ -231,9 +215,7 @@ export class CircuitBreaker {
   }
 }
 
-/**
- * 超时包装器
- */
+/** * timeout包装器*/
 export async function withTimeout<T>(
   promise: Promise<T>,
   timeoutMs: number,

@@ -1,7 +1,4 @@
-/**
- * 用户友好的错误提示组件
- * 提供丰富的错误展示、操作反馈和用户引导
- */
+/** * 用户友好Error提示component * 提供丰富Error展示、operations反馈和用户引导*/
 
 "use client";
 
@@ -14,10 +11,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import type { AppError, ErrorStats } from "@/types/api/errors";
 
-// 错误提示类型
+// Error提示class型
 export type ToastType = "success" | "error" | "warning" | "info";
 
-// 错误提示配置
+// Error提示配置
 export interface ToastConfig {
   id?: string;
   type: ToastType;
@@ -37,14 +34,14 @@ export interface ToastConfig {
   details?: React.ReactNode;
 }
 
-// 错误提示组件
+// Error提示component
 export function ErrorToast({ config, onDismiss }: { config: ToastConfig; onDismiss: () => void }) {
   const [progress, setProgress] = useState(100);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     if (config.duration && !config.persistent) {
-      const interval = 100; // 更新间隔
+      const interval = 100; // Update间隔
       const steps = config.duration / interval;
       let currentStep = 0;
 
@@ -118,12 +115,12 @@ export function ErrorToast({ config, onDismiss }: { config: ToastConfig; onDismi
     >
       <CardContent className="p-4">
         <div className="flex items-start space-x-3">
-          {/* 图标 */}
+          {/*图标*/}
           <div className="mt-0.5 flex-shrink-0">{getIcon()}</div>
 
-          {/* 内容 */}
+          {/*内容*/}
           <div className="min-w-0 flex-1">
-            {/* 标题和关闭按钮 */}
+            {/*标题和关闭按钮*/}
             <div className="mb-1 flex items-start justify-between">
               <h4 className="truncate pr-2 font-medium text-sm text-primary">{config.title}</h4>
               {config.dismissible && (
@@ -138,22 +135,22 @@ export function ErrorToast({ config, onDismiss }: { config: ToastConfig; onDismi
               )}
             </div>
 
-            {/* 消息 */}
+            {/*消息*/}
             {config.message && <p className="mb-2 text-sm text-secondary">{config.message}</p>}
 
-            {/* 描述 */}
+            {/*描述*/}
             {config.description && (
               <p className="mb-3 text-xs text-tertiary">{config.description}</p>
             )}
 
-            {/* 详细信息 */}
+            {/*详细信息*/}
             {config.showDetails && config.details && (
               <div className="mb-3 rounded border border-secondary bg-surface p-2">
                 <div className="text-xs text-secondary">{config.details}</div>
               </div>
             )}
 
-            {/* 操作按钮 */}
+            {/*operations按钮*/}
             {config.action && (
               <div className="mb-2 flex items-center space-x-2">
                 <Button
@@ -168,7 +165,7 @@ export function ErrorToast({ config, onDismiss }: { config: ToastConfig; onDismi
               </div>
             )}
 
-            {/* 进度条 */}
+            {/*进度条*/}
             {config.progress && config.duration && !config.persistent && (
               <div className="mt-2">
                 <Progress value={progress} className="h-1" />
@@ -181,7 +178,7 @@ export function ErrorToast({ config, onDismiss }: { config: ToastConfig; onDismi
   );
 }
 
-// 网络状态错误提示
+// 网络stateError提示
 export function NetworkErrorToast({
   onRetry,
   onDismiss,
@@ -208,7 +205,7 @@ export function NetworkErrorToast({
   );
 }
 
-// API错误提示
+// APIError提示
 export function ApiErrorToast({
   error,
   onRetry,
@@ -294,7 +291,7 @@ export function ApiErrorToast({
   );
 }
 
-// 文件上传错误提示
+// FileuploadError提示
 export function FileUploadErrorToast({
   error,
   onRetry,
@@ -357,7 +354,7 @@ export function FileUploadErrorToast({
   );
 }
 
-// 转录进度提示
+// Transcription进度提示
 export function TranscriptionProgressToast({
   progress,
   fileName,
@@ -390,7 +387,7 @@ export function TranscriptionProgressToast({
   );
 }
 
-// 成功提示
+// Success提示
 export function SuccessToast({
   title,
   message,
@@ -417,7 +414,7 @@ export function SuccessToast({
   );
 }
 
-// 错误统计提示
+// Error统计提示
 export function ErrorStatsToast({
   stats,
   onDismiss,
@@ -479,7 +476,7 @@ export function ErrorStatsToast({
   );
 }
 
-// Toast容器组件
+// Toast容器component
 export function ToastContainer({ children }: { children: React.ReactNode }) {
   return <div className="fixed top-4 right-4 z-50 w-full max-w-sm space-y-2">{children}</div>;
 }

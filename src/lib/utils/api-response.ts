@@ -8,7 +8,7 @@ import {
 } from "@/lib/utils/error-handler";
 import type { AppError } from "@/types/api/errors";
 
-// 成功响应函数
+// Successresponse函数
 export function apiSuccess(data: unknown, status: number = 200) {
   return NextResponse.json(
     {
@@ -27,7 +27,7 @@ export function apiSuccess(data: unknown, status: number = 200) {
   );
 }
 
-// 错误响应函数
+// Errorresponse函数
 export function apiError(error: AppError & { headers?: Record<string, string> }) {
   const { headers: customHeaders, ...errorData } = error;
   return NextResponse.json(
@@ -52,13 +52,13 @@ export function apiError(error: AppError & { headers?: Record<string, string> })
   );
 }
 
-// 从未知错误创建响应
+// 从未知Error创建response
 export function apiFromError(error: unknown, context?: string) {
   const appError = handleError(error, context);
   return apiError(appError);
 }
 
-// 常用的成功响应
+// 常用Successresponse
 export function apiCreated(data: unknown) {
   return apiSuccess(data, 201);
 }
@@ -78,7 +78,7 @@ export function apiAccepted(data: unknown) {
   return apiSuccess(data, 202);
 }
 
-// 常用的错误响应
+// 常用Errorresponse
 export function apiBadRequest(message: string, details?: Record<string, unknown>) {
   const error = validationError(message, details);
   return apiError(error);
@@ -123,7 +123,7 @@ export function apiServiceUnavailable(
   return apiError(error);
 }
 
-// 为了向后兼容，保留函数别名
+// a了向后兼容，keep函数别名
 export const ApiResponse = {
   success: apiSuccess,
   error: apiError,

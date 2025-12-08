@@ -21,9 +21,7 @@ export interface UseAudioPlayerReturn {
   onClearLoop: () => void;
 }
 
-/**
- * Custom hook for managing audio player state and controls
- */
+/** * Custom hook for managing audio player state and controls*/
 export function useAudioPlayer(): UseAudioPlayerReturn {
   const [audioPlayerState, setAudioPlayerState] = useState<AudioPlayerState>({
     isPlaying: false,

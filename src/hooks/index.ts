@@ -1,4 +1,4 @@
-// 简化的钩子导出
+// Simplifiedhook导出
 
 export { monitoredFetch, reportApiMetrics, useApiMonitoring } from "./api/useApiMonitoring";
 export { useTranscription } from "./api/useTranscription";

@@ -13,7 +13,7 @@ export function PlayerStatusBanner({
   isTranscribing,
   transcriptionProgress,
 }: PlayerStatusBannerProps) {
-  // 显示转录进度
+  // 显示Transcription进度
   if (isTranscribing) {
     return (
       <div

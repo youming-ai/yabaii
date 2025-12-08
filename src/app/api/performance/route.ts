@@ -1,14 +1,12 @@
-/**
- * 性能指标收集API
- * 用于接收和存储客户端性能数据
- */
+/** * 性能指标收集API * Used for接收和存储client性能数据*/
 
 import { type NextRequest, NextResponse } from "next/server";
 import { apiSuccess } from "@/lib/utils/api-response";
+import { performanceLogger } from "@/lib/utils/logger";
 
-// 内存存储性能数据（生产环境应使用数据库或外部服务）
+// Memory存储性能数据（生产环境应使用database或外部服务）
 const performanceStore = new Map<string, StoredPerformanceData[]>();
-const MAX_DAYS_TO_KEEP = 7; // 保留最近 7 天的数据
+const MAX_DAYS_TO_KEEP = 7; // keep最近 7 天数据
 
 // 清理过期数据
 function cleanupOldData(): void {
@@ -39,7 +37,7 @@ interface PerformanceMetrics {
   crashCount?: number;
 }
 
-// 性能数据接口
+// 性能数据API
 interface PerformanceData {
   metrics: PerformanceMetrics;
   url: string;
@@ -88,7 +86,7 @@ export async function POST(request: NextRequest) {
   try {
     const data: PerformanceData = await request.json();
 
-    // 验证数据格式
+    // Validate数据格式
     if (!data.metrics || !data.timestamp) {
       return NextResponse.json(
         {
@@ -99,7 +97,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 生成会话ID（基于时间戳和用户代理的简单哈希）
+    // 生成会话ID（基于时间戳和用户代理简单哈希）
     const sessionId = generateSessionId(data.userAgent);
     data.sessionId = sessionId;
 
@@ -107,7 +105,7 @@ export async function POST(request: NextRequest) {
     const dateKey = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
     if (!performanceStore.has(dateKey)) {
       performanceStore.set(dateKey, []);
-      // 新的一天开始时清理过期数据
+      // 新一天开始时清理过期数据
       cleanupOldData();
     }
 
@@ -118,7 +116,7 @@ export async function POST(request: NextRequest) {
         receivedAt: Date.now(),
       });
 
-      // 保持最近1000条记录
+      // 保持最近1000条record
       if (dailyData.length > 1000) {
         dailyData.splice(0, dailyData.length - 1000);
       }
@@ -127,9 +125,9 @@ export async function POST(request: NextRequest) {
     // 检测性能问题
     const issues = detectPerformanceIssues(data.metrics);
 
-    // 异步处理数据（不阻塞响应）
+    // 异步Process数据（不阻塞response）
     processPerformanceData(data, issues).catch((error) => {
-      console.error("Failed to process performance data:", error);
+      performanceLogger.error("Failed to process performance data:", error);
     });
 
     return apiSuccess({
@@ -138,7 +136,7 @@ export async function POST(request: NextRequest) {
       issues: issues.length > 0 ? issues : undefined,
     });
   } catch (error) {
-    console.error("Performance API error:", error);
+    performanceLogger.error("Performance API error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -158,13 +156,13 @@ export async function GET(request: NextRequest) {
     let data: StoredPerformanceData[] = [];
 
     if (sessionId) {
-      // 获取特定会话的数据
+      // Get特定会话数据
       for (const [, dailyData] of performanceStore.entries()) {
         const sessionData = dailyData.filter((item) => item.sessionId === sessionId);
         data.push(...sessionData);
       }
     } else {
-      // 获取特定日期的数据
+      // Get特定日期数据
       data = performanceStore.get(date) ?? [];
     }
 
@@ -176,10 +174,10 @@ export async function GET(request: NextRequest) {
       sessionId: sessionId || undefined,
       totalRecords: data.length,
       stats,
-      recentData: data.slice(-10), // 最近10条记录
+      recentData: data.slice(-10), // 最近10条record
     });
   } catch (error) {
-    console.error("Performance GET error:", error);
+    performanceLogger.error("Performance GET error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -203,7 +201,7 @@ function simpleHash(str: string): string {
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
     hash = (hash << 5) - hash + char;
-    hash = hash & hash; // 转换为32位整数
+    hash = hash & hash; // 转换as32位整数
   }
   return Math.abs(hash).toString(36);
 }
@@ -310,7 +308,7 @@ function calculatePercentiles(values: number[]): PercentileStats | null {
   const sorted = [...values].sort((a, b) => a - b);
   const len = sorted.length;
 
-  // 使用 Math.min 防止索引越界
+  // 使用 Math.min 防止index越界
   return {
     p50: sorted[Math.min(Math.floor(len * 0.5), len - 1)],
     p75: sorted[Math.min(Math.floor(len * 0.75), len - 1)],
@@ -365,30 +363,29 @@ function isValidMetricValue(value: MetricValue): value is number {
   return typeof value === "number" && Number.isFinite(value);
 }
 
-// 异步处理性能数据
+// 异步Process性能数据
 async function processPerformanceData(data: PerformanceData, issues: string[]): Promise<void> {
-  // 这里可以添加：
-  // 1. 发送到外部监控服务（如 Sentry, DataDog 等）
-  // 2. 存储到数据库
+  // 这里可以Add：
+  // 1. 发送To外部监控服务（如 Sentry, DataDog 等）
+  // 2. 存储Todatabase
   // 3. 生成告警
   // 4. 数据分析和报告
 
-  // 示例：记录严重性能问题
+  // 示例：record严重性能问题
   if (issues.length > 0) {
-    console.warn("Performance issues detected:", {
+    performanceLogger.warn("Performance issues detected:", {
       url: data.url,
       sessionId: data.sessionId,
       issues,
-      metrics: data.metrics,
     });
   }
 
-  // 示例：发送到外部服务（需要配置）
+  // 示例：发送To外部服务（需要配置）
   // if (process.env.MONITORING_WEBHOOK) {
-  //   await fetch(process.env.MONITORING_WEBHOOK, {
-  //     method: 'POST',
-  //     headers: { 'Content-Type': 'application/json' },
-  //     body: JSON.stringify({ data, issues })
-  //   });
+  // await fetch(process.env.MONITORING_WEBHOOK, {
+  // method: 'POST',
+  // headers: { 'Content-Type': 'application/json' },
+  // body: JSON.stringify({ data, issues })
+  // });
   // }
 }

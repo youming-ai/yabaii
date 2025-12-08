@@ -116,11 +116,11 @@ const AudioPlayer = React.memo<AudioPlayerProps>(
         role="region"
         aria-label="音频播放器控制面板"
       >
-        {/* 主要播放控制区域 */}
+        {/*主要播放控制区域*/}
         <div className="flex flex-col space-y-6">
-          {/* 播放信息和控制按钮 */}
+          {/*播放信息和控制按钮*/}
           <div className="flex flex-col space-y-4">
-            {/* 文件名 */}
+            {/*File名*/}
             <div className="text-center">
               <h2
                 className="truncate px-4 font-bold text-foreground text-xl"
@@ -147,7 +147,7 @@ const AudioPlayer = React.memo<AudioPlayerProps>(
               </div>
             </div>
 
-            {/* 播放控制按钮 */}
+            {/*播放控制按钮*/}
             <div className="flex items-center justify-center space-x-6">
               <AudioControls
                 isPlaying={isPlaying}
@@ -159,7 +159,7 @@ const AudioPlayer = React.memo<AudioPlayerProps>(
               />
             </div>
 
-            {/* 高级控制 */}
+            {/*高级控制*/}
             <div className="flex items-center justify-center space-x-6">
               <VolumeControl
                 isMuted={isMuted}
@@ -177,7 +177,7 @@ const AudioPlayer = React.memo<AudioPlayerProps>(
             </div>
           </div>
 
-          {/* 隐藏的音频元素 */}
+          {/*隐藏Audio元素*/}
           {audioUrl && (
             <audio
               ref={audioRef}

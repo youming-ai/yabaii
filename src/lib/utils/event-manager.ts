@@ -1,8 +1,6 @@
-/**
- * 优化的事件管理器
- * 提供防抖、节流、批量事件发射等功能
- */
+/** * 优化事件管理器 * 提供防抖、节流、batch事件发射等functionality*/
 
+import { logger } from "./logger";
 import { debounce, throttle } from "./performance-monitoring";
 
 export interface EventListener<TData = unknown> {
@@ -51,7 +49,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
       this.emitImmediate(event, data);
     };
 
-    // 创建防抖和节流的事件发射函数
+    // 创建防抖和节流事件发射函数
     this.debouncedEmit = debounce(
       emitImmediateFn,
       this.options.debounceTime,
@@ -68,7 +66,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     return this.listeners.get(event) as Map<string, EventListener<T[K]>> | undefined;
   }
 
-  // 添加事件监听器
+  // Add事件监听器
   on<K extends keyof T>(
     event: K,
     callback: (data: T[K]) => void,
@@ -82,9 +80,9 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
       this.listeners.set(event, eventListeners as Map<string, EventListener<unknown>>);
     }
 
-    // 检查监听器数量限制
+    // Check监听器数量限制
     if (eventListeners.size >= this.options.maxListeners) {
-      console.warn(`事件 ${String(event)} 的监听器数量已达到最大限制 ${this.options.maxListeners}`);
+      logger.warn(`事件 ${String(event)} 的监听器数量已达到最大限制 ${this.options.maxListeners}`);
     }
 
     eventListeners.set(id, {
@@ -98,7 +96,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     return id;
   }
 
-  // 添加事件监听器并返回清理函数
+  // Add事件监听器并返回清理函数
   onWithCleanup<K extends keyof T>(
     event: K,
     callback: (data: T[K]) => void,
@@ -108,7 +106,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     return () => this.off(event, id);
   }
 
-  // 移除事件监听器
+  // Removed事件监听器
   off<K extends keyof T>(event: K, idOrCallback: string | ((data: T[K]) => void)): void {
     const eventListeners = this.getListenerMap(event);
     if (!eventListeners) return;
@@ -116,7 +114,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     if (typeof idOrCallback === "string") {
       eventListeners.delete(idOrCallback);
     } else {
-      // 通过回调函数查找并删除
+      // Through回调函数查找并Delete
       for (const [id, listener] of eventListeners) {
         if (listener.callback === idOrCallback) {
           eventListeners.delete(id);
@@ -125,13 +123,13 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
       }
     }
 
-    // 如果没有监听器了，删除事件
+    // If没有监听器了，Delete事件
     if (eventListeners.size === 0) {
       this.listeners.delete(event);
     }
   }
 
-  // 移除所有监听器
+  // Removed所有监听器
   removeAllListeners<K extends keyof T>(event?: K): void {
     if (event) {
       this.listeners.delete(event);
@@ -156,28 +154,28 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
       try {
         listener.callback(data);
 
-        // 如果是一次性监听器，标记为需要删除
+        // Ifis一次性监听器，标记a需要Delete
         if (listener.once) {
           toRemove.push(listener.id);
         }
       } catch (error) {
-        console.error(`事件监听器执行错误 (${String(event)}):`, error);
+        logger.error(`事件监听器执行错误 (${String(event)}):`, error);
       }
     }
 
-    // 删除一次性监听器
+    // Delete一次性监听器
     for (const id of toRemove) {
       eventListeners.delete(id);
     }
 
-    // 更新事件计数
+    // Update事件计数
     const count = this.eventCounts.get(event) || 0;
     this.eventCounts.set(event, count + 1);
   }
 
   // 普通事件发射
   emit<K extends keyof T>(event: K, data: T[K]): void {
-    // 根据事件类型选择发射策略
+    // 根据事件class型选择发射策略
     if (this.shouldDebounce(event)) {
       this.debouncedEmit(event, data);
     } else if (this.shouldThrottle(event)) {
@@ -199,11 +197,11 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     this.throttledEmit(event, data);
   }
 
-  // 批量事件处理
+  // batch事件Process
   private addToBatch<K extends keyof T>(event: K, data: T[K]): void {
     this.eventQueue.push({ type: event, data });
 
-    // 如果队列达到批量大小或设置超时
+    // If队列达Tobatchsize或Settimeout
     if (this.eventQueue.length >= this.options.batchSize) {
       this.flushBatch();
     } else if (!this.batchTimer) {
@@ -213,7 +211,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     }
   }
 
-  // 立即刷新批量队列
+  // 立即刷新batch队列
   flushBatch(): void {
     if (this.batchTimer) {
       clearTimeout(this.batchTimer);
@@ -222,7 +220,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
 
     if (this.eventQueue.length === 0) return;
 
-    // 按事件类型分组
+    // 按事件class型分组
     const eventGroups = new Map<keyof T, T[keyof T][]>();
 
     for (const { type, data } of this.eventQueue) {
@@ -232,9 +230,9 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
       eventGroups.get(type)?.push(data);
     }
 
-    // 批量发射事件
+    // batch发射事件
     for (const [event, dataList] of eventGroups) {
-      // 如果数据列表只有一个元素，直接发射
+      // If数据列table只有一个元素，直接发射
       if (dataList.length === 1) {
         this.emitImmediate(event, dataList[0]);
       } else {
@@ -250,21 +248,21 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     this.eventQueue.length = 0;
   }
 
-  // 判断是否应该使用防抖
+  // 判断i否应该使用防抖
   private shouldDebounce<K extends keyof T>(event: K): boolean {
-    // 对于高频更新事件（如进度更新），使用防抖
+    // 对于高频Update事件（如进度Update），使用防抖
     const highFrequencyEvents = ["progress", "update", "change"] as string[];
     return highFrequencyEvents.includes(String(event));
   }
 
-  // 判断是否应该使用节流
+  // 判断i否应该使用节流
   private shouldThrottle<K extends keyof T>(event: K): boolean {
-    // 对于需要实时性但又要控制频率的事件，使用节流
+    // 对于需要实时性但又要控制频率事件，使用节流
     const realTimeEvents = ["scroll", "resize", "mousemove"] as string[];
     return realTimeEvents.includes(String(event));
   }
 
-  // 获取事件统计
+  // Get事件统计
   getEventStats(): Record<string, number> {
     const stats: Record<string, number> = {};
     for (const [event, count] of this.eventCounts) {
@@ -273,7 +271,7 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     return stats;
   }
 
-  // 获取监听器统计
+  // Get监听器统计
   getListenerStats(): Record<string, number> {
     const stats: Record<string, number> = {};
     for (const [event, listeners] of this.listeners) {
@@ -293,19 +291,19 @@ export class OptimizedEventEmitter<T extends Record<string, unknown> = Record<st
     this.throttledEmit.cancel?.();
   }
 
-  // 私有方法声明
+  // 私有method声明
   private debouncedEmit: CancelableEmitFunction<T>;
   private throttledEmit: CancelableEmitFunction<T>;
 }
 
-// 类型安全的事件发射器工厂
+// class型安全事件发射器工厂
 export function createEventEmitter<T extends Record<string, unknown>>(
   options?: EventEmitterOptions,
 ): OptimizedEventEmitter<T> {
   return new OptimizedEventEmitter<T>(options);
 }
 
-// 针对转录系统的专用事件管理器
+// 针对Transcription系统专用事件管理器
 type GenericPayload = Record<string, unknown>;
 
 export interface TranscriptionEvents extends Record<string, unknown> {
@@ -331,7 +329,7 @@ export class TranscriptionEventManager extends OptimizedEventEmitter<Transcripti
     });
   }
 
-  // 转录专用方法
+  // Transcription专用method
   emitTaskProgress(taskId: string, progress: number, message?: string): void {
     this.emit("task:progress", { taskId, progress, message });
   }
@@ -348,12 +346,12 @@ export class TranscriptionEventManager extends OptimizedEventEmitter<Transcripti
     this.emit("task:failed", { taskId, error });
   }
 
-  // 高频事件的防抖发射
+  // 高频事件防抖发射
   emitDebouncedProgress(taskId: string, progress: number, message?: string): void {
     this.emitDebounced("task:progress", { taskId, progress, message });
   }
 
-  // 获取转录事件统计
+  // GetTranscription事件统计
   getTranscriptionStats(): {
     events: Record<string, number>;
     listeners: Record<string, number>;

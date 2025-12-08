@@ -1,26 +1,19 @@
-/**
- * 应用路由常量定义
- * 统一管理所有路由路径，避免硬编码
- */
+/** * 应用路由常量定义 * 统一管理所有路由path，避免硬编码*/
 
 export const ROUTES = {
-  /** 首页 - 文件列表 */
+  /** 首页 - File列table*/
   HOME: "/",
-  /** 播放器页面 */
+  /** 播放器页面*/
   PLAYER: "/player/[fileId]",
-  /** 设置页面 */
+  /** Set页面*/
   SETTINGS: "/settings",
-  /** 账户页面 */
+  /** 账户页面*/
   ACCOUNT: "/account",
 } as const;
 
 export type RouteKey = keyof typeof ROUTES;
 
-/**
- * 生成路由路径
- * @param key 路由键
- * @param params 路径参数
- */
+/** * 生成路由path * @param key 路由键 * @param params path参数*/
 export function generatePath(key: RouteKey, params?: Record<string, string>): string {
   const path = ROUTES[key];
 
@@ -36,9 +29,7 @@ export function generatePath(key: RouteKey, params?: Record<string, string>): st
   return path;
 }
 
-/**
- * 获取播放器路由
- */
+/** * Get播放器路由*/
 export function getPlayerRoute(fileId: string): string {
   return generatePath("PLAYER", { fileId });
 }

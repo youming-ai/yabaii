@@ -1,5 +1,5 @@
-// 服务器端进度存储 - 内存存储版本
-// 使用内存存储进行进度跟踪，适用于本地开发和Pages环境
+// server端进度存储 - Memory存储版本
+// 使用Memory存储进行进度跟踪，适Used for本地开发和Pages环境
 
 export type ServerProgress = {
   fileId: number;
@@ -10,12 +10,10 @@ export type ServerProgress = {
   updatedAt: number;
 };
 
-// 内存存储 - 适用于本地开发和Pages环境
+// Memory存储 - 适Used for本地开发和Pages环境
 const progressStore = new Map<number, ServerProgress>();
 
-/**
- * 设置进度数据
- */
+/** * Set进度数据*/
 export async function setServerProgress(
   fileId: number,
   progress: Partial<ServerProgress>,
@@ -36,7 +34,7 @@ export async function setServerProgress(
 
   progressStore.set(fileId, updated);
 
-  // 30分钟后自动清理
+  // 30minutes后自动清理
   setTimeout(
     () => {
       if (progressStore.get(fileId)?.updatedAt === updated.updatedAt) {
@@ -47,30 +45,26 @@ export async function setServerProgress(
   );
 }
 
-/**
- * 获取进度数据
- */
+/** * Get进度数据*/
 export async function getServerProgress(fileId: number): Promise<ServerProgress | undefined> {
   return progressStore.get(fileId);
 }
 
-/**
- * 获取所有进度数据
- */
+/** * Get所有进度数据*/
 export async function getAllServerProgress(): Promise<ServerProgress[]> {
   return Array.from(progressStore.values());
 }
 
-/**
- * 清除进度数据
- */
+/** * 清除进度数据*/
 export async function clearServerProgress(fileId: number): Promise<void> {
   progressStore.delete(fileId);
 }
 
 // 向后兼容：提供同步版本
 export function setServerProgressSync(fileId: number, progress: Partial<ServerProgress>): void {
-  setServerProgress(fileId, progress).catch(console.error);
+  setServerProgress(fileId, progress).catch(() => {
+    // 静默ProcessError
+  });
 }
 
 export function getServerProgressSync(fileId: number): ServerProgress | undefined {

@@ -102,7 +102,7 @@ export function ThemeDebugger() {
   };
 
   const getContrastRating = (textColor: string, bgColor: string) => {
-    // 简化的对比度检查
+    // Simplified对比度Check
     const isTextLight =
       textColor.includes("255") || textColor.includes("#f8fafc") || textColor.includes("#e0e0e0");
     const isBgDark =

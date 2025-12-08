@@ -1,16 +1,13 @@
-/**
- * 转录进度管理器
- * 提供精确的进度反馈和状态跟踪
- */
+/** * Transcription进度管理器 * 提供精确进度反馈和state跟踪*/
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface ProgressStep {
   id: string;
   name: string;
   description: string;
   progress: number; // 0-100
-  estimatedDuration?: number; // 预估时间（毫秒）
+  estimatedDuration?: number; // 预估时间（毫seconds）
   startTime?: number;
   endTime?: number;
   error?: string;
@@ -23,36 +20,32 @@ export interface TranscriptionProgress {
   steps: ProgressStep[];
   overallProgress: number; // 0-100
   status:
-  | "idle"
-  | "preparing"
-  | "uploading"
-  | "transcribing"
-  | "postprocessing"
-  | "completed"
-  | "error";
+    | "idle"
+    | "preparing"
+    | "uploading"
+    | "transcribing"
+    | "postprocessing"
+    | "completed"
+    | "error";
   startTime?: number;
   estimatedCompletionTime?: number;
   error?: string;
 }
 
-/**
- * 进度管理器
- */
+/** * 进度管理器*/
 export class ProgressManager {
   private activeProgress: Map<number, TranscriptionProgress> = new Map();
   private progressCallbacks: Map<number, (progress: TranscriptionProgress) => void> = new Map();
   private progressUpdateInterval: NodeJS.Timeout | null = null;
 
   constructor() {
-    // 每500ms更新一次进度
+    // 每500msUpdate一次进度
     this.progressUpdateInterval = setInterval(() => {
       this.updateAllProgress();
     }, 500);
   }
 
-  /**
-   * 开始转录进度跟踪
-   */
+  /** * 开始Transcription进度跟踪*/
   startTranscription(fileId: number, steps: Partial<ProgressStep>[]): TranscriptionProgress {
     const defaultSteps: ProgressStep[] = [
       {
@@ -74,7 +67,7 @@ export class ProgressManager {
         name: "转录音频",
         description: "正在进行语音识别和转录",
         progress: 0,
-        estimatedDuration: 30000, // 30秒基础时间
+        estimatedDuration: 30000, // 30seconds基础时间
       },
       {
         id: "postprocessing",
@@ -110,9 +103,7 @@ export class ProgressManager {
     return progress;
   }
 
-  /**
-   * 更新步骤进度
-   */
+  /** * Update步骤进度*/
   updateStepProgress(
     fileId: number,
     stepId: string,
@@ -125,7 +116,7 @@ export class ProgressManager {
     const step = transcriptionProgress.steps.find((s) => s.id === stepId);
     if (!step) return;
 
-    // 更新步骤
+    // Update步骤
     step.progress = Math.max(0, Math.min(100, progress));
 
     if (details?.error) {
@@ -145,9 +136,7 @@ export class ProgressManager {
     console.log(`📈 更新进度 (文件ID: ${fileId}, 步骤: ${stepId}, 进度: ${progress}%)`);
   }
 
-  /**
-   * 移动到下一个步骤
-   */
+  /** * 移动To下一个步骤*/
   moveToNextStep(fileId: number): void {
     const transcriptionProgress = this.activeProgress.get(fileId);
     if (
@@ -164,15 +153,15 @@ export class ProgressManager {
       currentStep.endTime = Date.now();
     }
 
-    // 移动到下一步
+    // 移动To下一步
     transcriptionProgress.currentStep++;
 
-    // 更新状态
+    // Updatestate
     const nextStep = transcriptionProgress.steps[transcriptionProgress.currentStep];
     if (nextStep) {
       nextStep.startTime = Date.now();
 
-      // 根据步骤ID更新状态
+      // 根据步骤IDUpdatestate
       switch (nextStep.id) {
         case "preparing":
           transcriptionProgress.status = "preparing";
@@ -193,9 +182,7 @@ export class ProgressManager {
     this.notifyProgressChange(fileId);
   }
 
-  /**
-   * 完成转录
-   */
+  /** * 完成Transcription*/
   completeTranscription(fileId: number): void {
     const transcriptionProgress = this.activeProgress.get(fileId);
     if (!transcriptionProgress) return;
@@ -216,9 +203,7 @@ export class ProgressManager {
     console.log(`✅ 转录完成 (文件ID: ${fileId})`);
   }
 
-  /**
-   * 转录失败
-   */
+  /** * TranscriptionFailed*/
   failTranscription(fileId: number, error: string): void {
     const transcriptionProgress = this.activeProgress.get(fileId);
     if (!transcriptionProgress) return;
@@ -226,7 +211,7 @@ export class ProgressManager {
     transcriptionProgress.status = "error";
     transcriptionProgress.error = error;
 
-    // 标记当前步骤为失败
+    // 标记当前步骤asFailed
     const currentStep = transcriptionProgress.steps[transcriptionProgress.currentStep];
     if (currentStep) {
       currentStep.error = error;
@@ -237,9 +222,7 @@ export class ProgressManager {
     console.error(`❌ 转录失败 (文件ID: ${fileId}): ${error}`);
   }
 
-  /**
-   * 注册进度回调
-   */
+  /** * 注册进度回调*/
   onProgress(fileId: number, callback: (progress: TranscriptionProgress) => void): void {
     this.progressCallbacks.set(fileId, callback);
 
@@ -250,23 +233,17 @@ export class ProgressManager {
     }
   }
 
-  /**
-   * 移除进度回调
-   */
+  /** * Removed进度回调*/
   offProgress(fileId: number): void {
     this.progressCallbacks.delete(fileId);
   }
 
-  /**
-   * 获取当前进度
-   */
+  /** * Get当前进度*/
   getProgress(fileId: number): TranscriptionProgress | null {
     return this.activeProgress.get(fileId) || null;
   }
 
-  /**
-   * 计算整体进度
-   */
+  /** * 计算整体进度*/
   private calculateOverallProgress(fileId: number): void {
     const transcriptionProgress = this.activeProgress.get(fileId);
     if (!transcriptionProgress) return;
@@ -274,12 +251,12 @@ export class ProgressManager {
     const { steps, currentStep } = transcriptionProgress;
     let overallProgress = 0;
 
-    // 计算已完成步骤的进度
+    // 计算已完成步骤进度
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
 
       if (i < currentStep) {
-        // 已完成的步骤
+        // 已完成步骤
         overallProgress += 100;
       } else if (i === currentStep) {
         // 当前步骤
@@ -290,7 +267,7 @@ export class ProgressManager {
 
     transcriptionProgress.overallProgress = overallProgress / steps.length;
 
-    // 更新预估完成时间
+    // Update预估完成时间
     if (transcriptionProgress.startTime) {
       const elapsed = Date.now() - transcriptionProgress.startTime;
       if (transcriptionProgress.overallProgress > 0) {
@@ -301,9 +278,7 @@ export class ProgressManager {
     }
   }
 
-  /**
-   * 通知进度变化
-   */
+  /** * 通知进度变化*/
   private notifyProgressChange(fileId: number): void {
     const progress = this.activeProgress.get(fileId);
     const callback = this.progressCallbacks.get(fileId);
@@ -317,18 +292,16 @@ export class ProgressManager {
     }
   }
 
-  /**
-   * 更新所有进度（定时器调用）
-   */
+  /** * Update所有进度（定时器调用）*/
   private updateAllProgress(): void {
-    // 更新时间相关的进度信息
+    // Update时间相关进度信息
     this.activeProgress.forEach((progress, fileId) => {
       if (progress.status === "transcribing" || progress.status === "postprocessing") {
-        // 为长时间运行的步骤添加模拟进度
+        // a长时间运行步骤Add模拟进度
         const currentStep = progress.steps[progress.currentStep];
         if (currentStep && currentStep.progress > 0 && currentStep.progress < 95) {
           // 缓慢增加进度，给用户反馈
-          const increment = Math.random() * 2; // 0-2%的随机增量
+          const increment = Math.random() * 2; // 0-2%随机增量
           currentStep.progress = Math.min(95, currentStep.progress + increment);
           this.calculateOverallProgress(fileId);
         }
@@ -336,25 +309,19 @@ export class ProgressManager {
     });
   }
 
-  /**
-   * 清理进度跟踪
-   */
+  /** * 清理进度跟踪*/
   cleanup(fileId: number): void {
     this.activeProgress.delete(fileId);
     this.progressCallbacks.delete(fileId);
   }
 
-  /**
-   * 清理所有进度
-   */
+  /** * 清理所有进度*/
   cleanupAll(): void {
     this.activeProgress.clear();
     this.progressCallbacks.clear();
   }
 
-  /**
-   * 销毁进度管理器
-   */
+  /** * 销毁进度管理器*/
   destroy(): void {
     this.cleanupAll();
 
@@ -364,9 +331,7 @@ export class ProgressManager {
     }
   }
 
-  /**
-   * 获取活跃进度统计
-   */
+  /** * Get活跃进度统计*/
   getStats(): {
     totalActive: number;
     byStatus: Record<string, number>;
@@ -387,9 +352,7 @@ export class ProgressManager {
 // 全局进度管理器实例
 export const progressManager = new ProgressManager();
 
-/**
- * 便捷Hook: useTranscriptionProgress
- */
+/** * 便捷Hook: useTranscriptionProgress*/
 export function useTranscriptionProgress(fileId: number) {
   const [progress, setProgress] = useState<TranscriptionProgress | null>(null);
 
@@ -397,7 +360,7 @@ export function useTranscriptionProgress(fileId: number) {
     // 注册进度回调
     progressManager.onProgress(fileId, setProgress);
 
-    // 获取当前进度
+    // Get当前进度
     const currentProgress = progressManager.getProgress(fileId);
     if (currentProgress) {
       setProgress(currentProgress);

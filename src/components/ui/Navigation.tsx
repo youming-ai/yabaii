@@ -4,26 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ROUTES } from "@/lib/config/routes";
 import { ThemeToggleIcon } from "./ThemeToggle";
+import LanguageToggle from "./LanguageToggle";
+import { useI18n } from "@/components/layout/contexts/I18nContext";
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   const navLinks = [
     {
       id: "home",
-      label: "首页",
+      labelKey: "nav.home" as const,
       icon: "home",
       href: ROUTES.HOME,
     },
     {
       id: "settings",
-      label: "设置",
+      labelKey: "nav.settings" as const,
       icon: "settings",
       href: ROUTES.SETTINGS,
     },
     {
       id: "account",
-      label: "用户中心",
+      labelKey: "nav.account" as const,
       icon: "account_circle",
       href: ROUTES.ACCOUNT,
     },
@@ -42,16 +45,20 @@ export default function Navigation() {
               key={item.id}
               href={item.href}
               className={`nav-button ${isActive ? "active" : ""}`}
-              aria-label={item.label}
+              aria-label={t(item.labelKey)}
               aria-current={isActive ? "page" : undefined}
+              title={t(item.labelKey)}
             >
               <span className="material-symbols-outlined text-3xl">{item.icon}</span>
             </Link>
           );
         })}
 
-        {/* 主题切换按钮 */}
-        <div className="flex items-center">
+        {/*控制按钮组*/}
+        <div className="flex items-center gap-2">
+          {/*语言切换按钮*/}
+          <LanguageToggle />
+          {/*主题切换按钮*/}
           <ThemeToggleIcon />
         </div>
       </div>

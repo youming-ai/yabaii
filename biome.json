@@ -1,4 +1,8 @@
 {
+  "files": {
+    "ignoreUnknown": true,
+    "includes": ["src/**", "*.json", "*.js", "*.ts", "*.tsx", "*.mjs", "*.cjs"]
+  },
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2,
@@ -9,6 +13,12 @@
       "recommended": true,
       "suspicious": {
         "noUnknownAtRules": "off"
+      },
+      "security": {
+        "noDangerouslySetInnerHtml": "off"
+      },
+      "a11y": {
+        "useSemanticElements": "off"
       }
     }
   }

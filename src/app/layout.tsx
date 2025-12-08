@@ -4,6 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ThemeProvider } from "@/components/layout/contexts/ThemeContext";
 import { TranscriptionLanguageProvider } from "@/components/layout/contexts/TranscriptionLanguageContext";
+import { I18nProvider } from "@/components/layout/contexts/I18nContext";
 import { QueryProvider } from "@/components/layout/providers/QueryProvider";
 import { PageErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { ToastContainer } from "@/components/ui/ErrorToast";
@@ -15,6 +16,20 @@ export const metadata: Metadata = {
   title: "影子跟读",
   description: "Web-based language shadowing learning application",
   manifest: "/manifest.json",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://umuo.app"),
+  openGraph: {
+    type: "website",
+    locale: "zh_CN",
+    url: "/",
+    title: "影子跟读 - AI驱动的语言学习工具",
+    description: "基于Web的语言影子跟读学习应用，支持音频转录、文本处理和跟读练习。",
+    siteName: "影子跟读",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "影子跟读 - AI驱动的语言学习工具",
+    description: "基于Web的语言影子跟读学习应用，支持音频转录、文本处理和跟读练习。",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -39,7 +54,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="format-detection" content="telephone=no" />
         <meta name="mobile-web-app-capable" content="yes" />
 
-        {/* SEO和访问性优化 */}
+        {/*SEO和访问性优化*/}
         <meta
           name="description"
           content="基于Web的语言影子跟读学习应用，支持音频转录、文本处理和跟读练习"
@@ -48,29 +63,49 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="author" content="影子跟读团队" />
         <meta name="robots" content="index, follow" />
 
-        {/* PWA主题色 */}
+        {/*PWA主题色*/}
         <meta name="theme-color" content="#3b82f6" />
 
-        {/* Material Icons */}
+        {/*Material Icons*/}
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined&display=swap"
           rel="stylesheet"
         />
       </head>
       <body className="min-h-screen font-sans antialiased">
-        <ThemeProvider defaultTheme="dark">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              name: "影子跟读",
+              applicationCategory: "EducationalApplication",
+              operatingSystem: "Web",
+              offers: {
+                "@type": "Offer",
+                price: "0",
+                priceCurrency: "CNY",
+              },
+              description: "基于Web的语言影子跟读学习应用，支持音频转录、文本处理和跟读练习",
+            }),
+          }}
+        />
+        <ThemeProvider defaultTheme="system">
           <TranscriptionLanguageProvider>
-            <MonitoringInitializer />
-            <QueryProvider>
-              <PageErrorBoundary>
-                <div className="relative min-h-screen">{children}</div>
-              </PageErrorBoundary>
-            </QueryProvider>
-            <ThemeDebuggerToggle />
-            <PwaRegister />
-            <ToastContainer>{null}</ToastContainer>
-            <SpeedInsights />
-            <Analytics />
+            <I18nProvider>
+              <MonitoringInitializer />
+              <QueryProvider>
+                <PageErrorBoundary>
+                  <div className="relative min-h-screen">{children}</div>
+                </PageErrorBoundary>
+              </QueryProvider>
+              <ThemeDebuggerToggle />
+              <PwaRegister />
+              <ToastContainer>{null}</ToastContainer>
+              <SpeedInsights />
+              <Analytics />
+            </I18nProvider>
           </TranscriptionLanguageProvider>
         </ThemeProvider>
       </body>

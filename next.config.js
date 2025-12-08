@@ -3,7 +3,20 @@
 const nextConfig = {
   // 图片优化配置 - Vercel 支持完整的图片优化
   images: {
-    domains: ["localhost", "umuo.app", "vercel.app"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "localhost",
+      },
+      {
+        protocol: "https",
+        hostname: "umuo.app",
+      },
+      {
+        protocol: "https",
+        hostname: "vercel.app",
+      },
+    ],
     formats: ["image/webp", "image/avif"],
   },
 
