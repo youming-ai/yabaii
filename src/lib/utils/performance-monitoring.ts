@@ -840,7 +840,6 @@ export function usePerformanceMonitoring() {
 }
 
 // 防抖函数
-// biome-ignore lint/suspicious/noExplicitAny: helper must accept arbitrary arguments
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
@@ -950,7 +949,6 @@ export function debounce<T extends (...args: any[]) => any>(
 }
 
 // 节流函数
-// biome-ignore lint/suspicious/noExplicitAny: helper must accept arbitrary arguments
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
   wait: number,

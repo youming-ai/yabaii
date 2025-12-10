@@ -1,4 +1,7 @@
-/** * 统一导入indexFile * 减少项目in重复导入语句*/
+/**
+ * 统一导入入口文件
+ * 减少项目中重复导入语句
+ */
 
 export type {
   FileRow,
@@ -6,11 +9,11 @@ export type {
   Segment,
   TranscriptRow,
 } from "../types/db/database";
-// database相关
+// 数据库相关
 export { db } from "./db/db";
 // API 相关
 export { apiError, apiFromError, apiSuccess } from "./utils/api-response";
-// ErrorProcess相关
+// 错误处理相关
 export { handleError, logError } from "./utils/error-handler";
 export {
   handleTranscriptionError,
@@ -28,9 +31,9 @@ export const API_ENDPOINTS = {
 } as const;
 
 export const CACHE_TIMES = {
-  DEFAULT: 5 * 60 * 1000, // 5minutes
-  LONG: 15 * 60 * 1000, // 15minutes
-  SHORT: 60 * 1000, // 1minutes
+  DEFAULT: 5 * 60 * 1000, // 5 分钟
+  LONG: 15 * 60 * 1000, // 15 分钟
+  SHORT: 60 * 1000, // 1 分钟
 } as const;
 
 export const SUPPORTED_AUDIO_FORMATS = [
@@ -45,5 +48,4 @@ export const TRANSCRIPTION_LANGUAGES = {
   JAPANESE: "ja",
   ENGLISH: "en",
   CHINESE: "zh",
-  KOREAN: "ko",
 } as const;

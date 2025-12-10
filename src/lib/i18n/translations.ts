@@ -310,6 +310,3 @@ export const translations: Record<string, TranslationKey> = {
     "common.success": "成功",
   },
 };
-
-// Default language (fallback to English if key not found)
-const DEFAULT_LANGUAGE = "en-US";

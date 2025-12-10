@@ -7,8 +7,8 @@ import {
   getRateLimitHeaders,
 } from "@/lib/utils/rate-limiter";
 
-// Theme detection middleware
-export function middleware(request: NextRequest) {
+// Theme detection proxy
+export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
   // Handle theme preference from query params
@@ -35,7 +35,7 @@ export function middleware(request: NextRequest) {
     const config = getRateLimitConfig(pathname);
     const result = checkRateLimit(rateLimitKey, config);
 
-    // If被限流，返回 429 response
+    // 如果被限流，返回 429 响应
     if (result.limited) {
       return new NextResponse(
         JSON.stringify({
@@ -56,14 +56,14 @@ export function middleware(request: NextRequest) {
       );
     }
 
-    // 正常response，Add限流头
+    // 正常响应，添加限流头
     const response = NextResponse.next();
     const rateLimitHeaders = getRateLimitHeaders(result);
     for (const [key, value] of Object.entries(rateLimitHeaders)) {
       response.headers.set(key, value);
     }
 
-    // Add security headers
+    // 添加安全头
     response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
     response.headers.set("X-DNS-Prefetch-Control", "on");
@@ -71,7 +71,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // Non-API routes: Set security headers only
+  // 非 API 路由：仅设置安全头
   const response = NextResponse.next();
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   response.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");

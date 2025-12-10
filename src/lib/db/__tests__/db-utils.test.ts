@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { FileRow, Segment, TranscriptRow } from "@/types/db/database";
 import { DBUtils, db } from "../db";
-import type { FileRow, TranscriptRow, Segment } from "@/types/db/database";
 
 // Mock database
 vi.mock("@/lib/utils/error-handler", () => ({
-  handleError: vi.fn((error, context) => {
+  handleError: vi.fn((error, _context) => {
     throw error;
   }),
 }));
@@ -359,7 +359,7 @@ describe("DBUtils", () => {
   describe("Database maintenance", () => {
     it("should clear all data", async () => {
       const mockClear = vi.fn().mockResolvedValue(undefined);
-      const mockTransaction = vi.fn().mockImplementation((mode, tables, callback) => {
+      const mockTransaction = vi.fn().mockImplementation((_mode, _tables, callback) => {
         return callback().then(() => {});
       });
 

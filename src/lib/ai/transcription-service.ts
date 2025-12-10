@@ -1,4 +1,8 @@
-/** * 统一Transcription服务 - 基于 Groq SDK Simplified版本 * 合并了 transcription-service.t 和 transcription-service-ai-sdk.t functionality * Removed了complexAudio分块Process，使用统一 Groq SDK API*/
+/**
+ * 统一转录服务 - 基于 Groq SDK 简化版本
+ * 合并了转录服务的核心功能
+ * 移除了复杂的音频分块处理，使用统一的 Groq SDK API
+ */
 
 import Groq from "groq-sdk";
 import {
@@ -39,7 +43,9 @@ interface PostProcessedSegment {
   furigana?: string;
 }
 
-/** * 使用 AI SDK 进行Transcription - Simplified主函数*/
+/**
+ * 使用 Groq SDK 进行转录 - 简化版主函数
+ */
 export async function transcribeAudio(
   fileId: number,
   options: TranscriptionOptions = {},
@@ -48,10 +54,10 @@ export async function transcribeAudio(
   const startTime = Date.now();
 
   try {
-    // Update进度
+    // 更新进度
     await updateTranscriptionProgress(fileId, 10, "准备转录...", "processing", options);
 
-    // GetFile数据
+    // 获取文件数据
     const fileRecord = await db.files.get(fileId);
     if (!fileRecord) {
       throw new Error("文件不存在");
@@ -59,19 +65,19 @@ export async function transcribeAudio(
 
     await updateTranscriptionProgress(fileId, 30, "开始转录处理...", "processing", options);
 
-    // 使用 AI SDK 进行Transcription
+    // 使用 Groq SDK 进行转录
     const result = await transcribeWithGroqSDK(fileRecord, options);
 
-    // Save结果
+    // 保存结果
     await updateTranscriptionProgress(fileId, 90, "保存转录结果...", "processing", options);
     const transcriptId = await saveTranscriptionResult(fileId, result, options, startTime);
 
-    // 后Process（可选，不影响主要流程）
+    // 后处理（可选，不影响主要流程）
     try {
       await updateTranscriptionProgress(fileId, 95, "后处理...", "processing", options);
       await processPostTranscription(transcriptId, result);
     } catch {
-      // 后ProcessFailed不影响主流程
+      // 后处理失败不影响主流程
       await updateTranscriptionProgress(fileId, 95, "转录完成，后处理失败", "processing", options);
     }
 
@@ -81,7 +87,7 @@ export async function transcribeAudio(
   } catch (error) {
     await updateTranscriptionProgress(fileId, 0, "转录失败", "failed", options);
 
-    // 改进ErrorProcess - 确保Errorobject有意义
+    // 改进错误处理 - 确保错误对象有意义
     if (!error) {
       throw new Error("转录过程中发生未知错误");
     } else if (
@@ -90,7 +96,7 @@ export async function transcribeAudio(
       !("message" in error) &&
       !("error" in error)
     ) {
-      // ProcessFrom Groq SDK Errorobject
+      // 处理 Groq SDK 返回的错误对象
       const errorStr = JSON.stringify(error);
       throw new Error(`转录 API 错误: ${errorStr}`);
     } else {
@@ -99,7 +105,9 @@ export async function transcribeAudio(
   }
 }
 
-/** * Groq SDK Transcription实现 - Simplified版本*/
+/**
+ * Groq SDK 转录实现 - 简化版本
+ */
 async function transcribeWithGroqSDK(
   fileRecord: import("@/types/db/database").FileRow,
   options: TranscriptionOptions,
@@ -116,7 +124,7 @@ async function transcribeWithGroqSDK(
     options,
   );
 
-  // Check API 密钥
+  // 检查 API 密钥
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     throw new Error("Groq API 密钥未配置");
@@ -125,19 +133,19 @@ async function transcribeWithGroqSDK(
   // 初始化 Groq client
   const groq = new Groq({ apiKey });
 
-  // CheckFile数据
+  // 检查文件数据
   if (!fileRecord.blob) {
     throw new Error("文件数据不存在");
   }
 
-  // 将 Blob 转换a File object
+  // 将 Blob 转换为 File 对象
   const file = new File([fileRecord.blob], fileRecord.name, {
     type: fileRecord.type,
     lastModified: fileRecord.uploadedAt.getTime(),
   });
 
   const transcription = await groq.audio.transcriptions.create({
-    file: file, // 使用转换后 File object
+    file: file, // 使用转换后的 File 对象
     model: "whisper-large-v3-turbo",
     temperature: 0,
     response_format: "verbose_json",
@@ -145,7 +153,7 @@ async function transcribeWithGroqSDK(
     timestamp_granularities: ["word", "segment"],
   });
 
-  // ProcessTranscription结果 - Simplified逻辑
+  // 处理转录结果 - 简化逻辑
   const transcriptionData = transcription as GroqTranscriptionResponse;
   let processedSegments: TranscriptionResult["segments"] = [];
 
@@ -170,7 +178,9 @@ async function transcribeWithGroqSDK(
   };
 }
 
-/** * SaveTranscription结果 - Simplified版本*/
+/**
+ * 保存转录结果 - 简化版本
+ */
 async function saveTranscriptionResult(
   fileId: number,
   result: TranscriptionResult,
@@ -206,7 +216,9 @@ async function saveTranscriptionResult(
   return transcriptId;
 }
 
-/** * 后Process - Simplified版本，Error不影响主要流程*/
+/**
+ * 后处理 - 简化版本，错误不影响主要流程
+ */
 async function processPostTranscription(
   transcriptId: number,
   result: TranscriptionResult,
@@ -252,11 +264,13 @@ async function processPostTranscription(
         });
     }
   } catch {
-    // 后ProcessFailed不影响主流程
+    // 后处理失败不影响主流程
   }
 }
 
-/** * UpdateTranscription进度 - Simplified版本*/
+/**
+ * 更新转录进度 - 简化版本
+ */
 async function updateTranscriptionProgress(
   fileId: number,
   progress: number,
@@ -268,7 +282,7 @@ async function updateTranscriptionProgress(
     const { setServerProgress } = await import("./server-progress");
     setServerProgress(fileId, { status, progress, message });
   } catch {
-    // Update进度Failed不影响主流程
+    // 更新进度失败不影响主流程
   }
 
   if (options?.onProgress) {
@@ -282,7 +296,9 @@ async function updateTranscriptionProgress(
   }
 }
 
-/** * GetTranscription进度 - Simplified版本*/
+/**
+ * 获取转录进度 - 简化版本
+ */
 export async function getTranscriptionProgress(fileId: number): Promise<TranscriptionProgress> {
   try {
     const { db } = await import("../db/db");
@@ -328,13 +344,17 @@ export async function getTranscriptionProgress(fileId: number): Promise<Transcri
   }
 }
 
-/** * GetFileTranscriptionrecord - Simplified版本*/
+/**
+ * 获取文件转录记录 - 简化版本
+ */
 export async function getFileTranscripts(fileId: number) {
   const { db } = await import("../db/db");
   return await db.transcripts.where("fileId").equals(fileId).toArray();
 }
 
-/** * 后Processsegments - Simplified版本*/
+/**
+ * 后处理分段 - 简化版本
+ */
 export async function postProcessSegmentsByTranscriptId(
   transcriptId: number,
   _options: {

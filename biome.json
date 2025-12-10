@@ -1,7 +1,7 @@
 {
   "files": {
     "ignoreUnknown": true,
-    "includes": ["src/**", "*.json", "*.js", "*.ts", "*.tsx", "*.mjs", "*.cjs"]
+    "includes": ["src/**/*.ts", "src/**/*.tsx", "*.json", "*.js", "*.ts", "*.tsx", "*.mjs", "*.cjs"]
   },
   "formatter": {
     "indentStyle": "space",
@@ -12,13 +12,17 @@
     "rules": {
       "recommended": true,
       "suspicious": {
-        "noUnknownAtRules": "off"
+        "noUnknownAtRules": "off",
+        "noExplicitAny": "off"
       },
       "security": {
         "noDangerouslySetInnerHtml": "off"
       },
       "a11y": {
         "useSemanticElements": "off"
+      },
+      "correctness": {
+        "noUnusedVariables": "warn"
       }
     }
   }

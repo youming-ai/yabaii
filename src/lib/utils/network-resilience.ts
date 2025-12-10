@@ -273,7 +273,8 @@ export class NetworkResilienceManager {
     console.log(`🔄 开始处理重试队列 (${this.retryQueue.length} 个操作)`);
 
     while (this.retryQueue.length > 0) {
-      const operation = this.retryQueue.shift()!;
+      const operation = this.retryQueue.shift();
+      if (!operation) break;
 
       try {
         await this.executeOperation(operation);

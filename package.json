@@ -6,32 +6,36 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:analyze": "ANALYZE=true next build",
     "start": "next start",
-    "deploy": "vercel --prod",
-    "deploy:preview": "vercel",
     "lint": "biome check .",
     "format": "biome format . --write",
     "type-check": "tsc --noEmit",
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "ci:build": "pnpm install --frozen-lockfile && pnpm lint && pnpm type-check && pnpm test:run && pnpm build",
     "clean": "rm -rf .next node_modules/.cache"
   },
   "keywords": [
     "language-learning",
+    "shadowing",
+    "speech-recognition",
     "transcription",
-    "audio",
+    "audio-processing",
     "ai",
-    "education"
+    "groq",
+    "whisper",
+    "nextjs",
+    "react",
+    "typescript",
+    "education",
+    "japanese",
+    "english"
   ],
   "author": "umuo.app Team",
   "license": "ISC",
   "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
   },
   "dependencies": {
     "@radix-ui/react-collapsible": "^1.1.12",

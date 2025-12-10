@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ROUTES } from "@/lib/config/routes";
-import { ThemeToggleIcon } from "./ThemeToggle";
-import LanguageToggle from "./LanguageToggle";
 import { useI18n } from "@/components/layout/contexts/I18nContext";
+import { ROUTES } from "@/lib/config/routes";
+import LanguageToggle from "./LanguageToggle";
+import { ThemeToggleIcon } from "./ThemeToggle";
 
 export default function Navigation() {
   const pathname = usePathname();

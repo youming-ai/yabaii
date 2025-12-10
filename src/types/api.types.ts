@@ -56,14 +56,6 @@ export interface TranscriptionWord {
   confidence?: number;
 }
 
-export interface AudioUploadResponse {
-  fileId: string;
-  filename: string;
-  size: number;
-  duration?: number;
-  format: string;
-}
-
 export interface ProgressUpdateData {
   fileId: string;
   status: string;
@@ -74,12 +66,6 @@ export interface ProgressUpdateData {
     code: string;
     message: string;
   };
-}
-
-export interface ValidationError {
-  field: string;
-  message: string;
-  value?: unknown;
 }
 
 export interface ServiceError {

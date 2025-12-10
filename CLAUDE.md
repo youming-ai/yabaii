@@ -42,7 +42,6 @@ File Management   AI Services   Text Normalization   Persistent Storage   Real-t
 # Development
 pnpm dev              # Start development server
 pnpm build            # Build for production
-pnpm build:analyze    # Build with bundle analyzer
 pnpm start            # Start production server
 
 # Code Quality
@@ -50,18 +49,10 @@ pnpm lint             # Run Biome.js linter
 pnpm format           # Format code with Biome.js
 pnpm type-check       # TypeScript type checking
 
-# Testing (Optional Infrastructure)
+# Testing (Integration with Vitest)
 pnpm test             # Run tests in watch mode
 pnpm test:run         # Run tests once
 pnpm test:coverage    # Run tests with coverage report
-pnpm test:ui          # Run tests with UI interface
-
-# Deployment (Vercel)
-pnpm deploy           # Build and deploy to production
-pnpm deploy:preview   # Build and deploy to preview
-
-# CI/Quality Pipeline
-pnpm ci:build         # Complete CI pipeline (install, lint, type-check, test, build)
 ```
 
 ## Key Directories

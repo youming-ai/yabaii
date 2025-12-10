@@ -162,7 +162,7 @@ function FileCardWrapper({
 }) {
   // Hooks must be called before any early returns - Add空值Check
   const { data: statusData, isLoading } = useFileStatus(file.id || 0);
-  const { startTranscription, isTranscribing } = useFileStatusManager(file.id || 0);
+  const { startTranscription } = useFileStatusManager(file.id || 0);
   const { language } = useTranscriptionLanguage();
 
   // 优雅地Process可能缺失 file.id

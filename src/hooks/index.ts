@@ -1,6 +1,6 @@
 // Simplifiedhook导出
 
-export { monitoredFetch, reportApiMetrics, useApiMonitoring } from "./api/useApiMonitoring";
+export { useApiMonitoring } from "./api/useApiMonitoring";
 export { useTranscription } from "./api/useTranscription";
 export type { UseFilesReturn } from "./db/useFiles";
 export { useFiles } from "./db/useFiles";

@@ -1,6 +1,6 @@
-import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { renderHook, waitFor } from "@testing-library/react";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useTranscription, useTranscriptionStatus } from "../useTranscription";
 
 // Mock dependencies
@@ -87,7 +87,9 @@ describe("useTranscription Hook", () => {
         mockSegments,
       );
 
-      const { result } = renderHook(() => useTranscriptionStatus(1), { wrapper });
+      const { result } = renderHook(() => useTranscriptionStatus(1), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.data).toEqual({
@@ -100,7 +102,9 @@ describe("useTranscription Hook", () => {
     it("should return null when no transcript exists", async () => {
       vi.mocked(require("@/lib/db/db").DBUtils.findTranscriptByFileId).mockResolvedValue(undefined);
 
-      const { result } = renderHook(() => useTranscriptionStatus(1), { wrapper });
+      const { result } = renderHook(() => useTranscriptionStatus(1), {
+        wrapper,
+      });
 
       await waitFor(() => {
         expect(result.current.data).toEqual({
@@ -116,7 +120,9 @@ describe("useTranscription Hook", () => {
         [],
       );
 
-      const { result } = renderHook(() => useTranscriptionStatus(1), { wrapper });
+      const { result } = renderHook(() => useTranscriptionStatus(1), {
+        wrapper,
+      });
 
       expect(result.current.options.staleTime).toBe(1000 * 60 * 15); // 15 minutes
     });
@@ -283,7 +289,7 @@ describe("useTranscription Hook", () => {
       const abortController = new AbortController();
 
       vi.mocked(global.fetch).mockImplementation(() => {
-        return new Promise((resolve, reject) => {
+        return new Promise((_resolve, reject) => {
           abortController.signal.addEventListener("abort", () => {
             reject(new DOMException("Request aborted", "AbortError"));
           });

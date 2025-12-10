@@ -43,8 +43,8 @@
 
 ### 环境要求
 
-- Node.js >= 18.0.0
-- pnpm >= 8.0.0
+- Node.js >= 20.0.0
+- pnpm >= 9.0.0
 
 ### 安装
 
@@ -76,18 +76,8 @@ pnpm dev
 # 构建生产版本
 pnpm build
 
-# 分析包大小
-pnpm build:analyze
-```
-
-### 部署
-
-```bash
-# 使用优化部署脚本
-./scripts/deploy-optimized.sh
-
-# 或手动部署
-pnpm deploy:prod
+# 启动生产服务器
+pnpm start
 ```
 
 ## 📋 可用脚本
@@ -97,36 +87,25 @@ pnpm deploy:prod
 pnpm dev              # 启动开发服务器
 pnpm build            # 构建生产版本
 pnpm start            # 启动生产服务器
-pnpm build:analyze    # 分析包大小
 ```
 
 ### 代码质量
 ```bash
-pnpm lint             # 代码风格检查
+pnpm lint             # 代码风格检查 (Biome.js)
 pnpm format           # 代码格式化
 pnpm type-check       # TypeScript 类型检查
 ```
 
-### 测试
+### 测试 (Vitest)
 ```bash
-pnpm test             # 运行测试
-pnpm test:ui          # 运行测试 UI
+pnpm test             # 运行测试（监视模式）
+pnpm test:run         # 运行测试（单次）
 pnpm test:coverage    # 生成测试覆盖率报告
-pnpm test:watch       # 监视模式运行测试
-```
-
-### 部署
-```bash
-pnpm deploy           # 部署到生产环境
-pnpm deploy:preview   # 部署到预览环境
-pnpm cf:deploy:prod   # Cloudflare Pages 生产部署
 ```
 
 ### 工具
 ```bash
 pnpm clean            # 清理构建产物
-pnpm audit            # 安全审计
-pnpm performance-test # 性能测试
 ```
 
 ## 🏗️ 项目结构
