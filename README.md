@@ -1,17 +1,15 @@
-# umuo.app
+# Shadowing Learning
 
 <div align="center">
 
-![umuo.app Logo](https://via.placeholder.com/200x80/1a1a1a/ffffff?text=umuo.app)
-
 **AI驱动的语言学习应用 - 专注于影子练习的音频转录工具**
 
-[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/umuo/umuo-app)
-[![License](https://img.shields.io/badge/license-ISC-blue.svg)](LICENSE)
-[![Next.js](https://img.shields.io/badge/Next.js-15.5.3-black.svg)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.2-blue.svg)](https://www.typescriptlang.org/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)](https://github.com/youming-ai/shadowing-learning)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Next.js](https://img.shields.io/badge/Next.js-16.0.7-black.svg)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue.svg)](https://www.typescriptlang.org/)
 
-[功能演示](https://umuo.app) | [文档](./docs) | [API 参考](./docs/api.md) | [组件文档](./docs/components.md)
+[功能演示](https://shadowing-learning.vercel.app) | [文档](./docs/ARCHITECTURE.md) | [开发指南](./CLAUDE.md)
 
 </div>
 
@@ -50,8 +48,8 @@
 
 ```bash
 # 克隆项目
-git clone https://github.com/umuo/umuo-app.git
-cd umuo-app
+git clone https://github.com/youming-ai/shadowing-learning.git
+cd shadowing-learning
 
 # 安装依赖
 pnpm install
@@ -111,7 +109,7 @@ pnpm clean            # 清理构建产物
 ## 🏗️ 项目结构
 
 ```
-umuo-app/
+shadowing-learning/
 ├── src/
 │   ├── app/                    # Next.js App Router
 │   │   ├── api/               # API 路由
@@ -234,7 +232,7 @@ pnpm test:coverage
 
 ## 📄 许可证
 
-本项目采用 [ISC 许可证](LICENSE)。
+本项目采用 [MIT 许可证](LICENSE)。
 
 ## 🙏 致谢
 
@@ -249,9 +247,9 @@ pnpm test:coverage
 
 ## 📞 联系
 
-- 项目主页: [https://umuo.app](https://umuo.app)
-- 问题反馈: [GitHub Issues](https://github.com/umuo/umuo-app/issues)
-- 功能建议: [GitHub Discussions](https://github.com/umuo/umuo-app/discussions)
+- 项目主页: [https://shadowing-learning.vercel.app](https://shadowing-learning.vercel.app)
+- 问题反馈: [GitHub Issues](https://github.com/youming-ai/shadowing-learning/issues)
+- 功能建议: [GitHub Discussions](https://github.com/youming-ai/shadowing-learning/discussions)
 
 ---
 
@@ -259,6 +257,6 @@ pnpm test:coverage
 
 **🌟 如果这个项目对你有帮助，请给我们一个 Star！**
 
-Made with ❤️ by umuo.app Team
+Made with ❤️ by Shadowing Learning Team
 
 </div>

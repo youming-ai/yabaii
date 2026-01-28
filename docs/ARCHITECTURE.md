@@ -1,10 +1,10 @@
-# Umuo App Architecture Documentation
+# Shadowing Learning Architecture Documentation
 
-This document provides a comprehensive overview of the Umuo App architecture, including design decisions, patterns, and best practices.
+This document provides a comprehensive overview of the Shadowing Learning architecture, including design decisions, patterns, and best practices.
 
 ## 🏗️ Overview
 
-Umuo App is a language learning application focused on shadowing practice with AI-powered audio transcription. The architecture is designed for scalability, maintainability, and developer productivity.
+Shadowing Learning is a language learning application focused on shadowing practice with AI-powered audio transcription. The architecture is designed for scalability, maintainability, and developer productivity.
 
 ## 📊 Architecture Diagram
 
