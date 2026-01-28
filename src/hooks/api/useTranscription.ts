@@ -65,7 +65,7 @@ export function useTranscriptionStatus(fileId: number) {
   });
 }
 
-/** * Save transcription results to database - uses transactions for atomicity * Improved transaction handling with error recovery and partial retry mechanism*/
+/** * 保存转录结果到数据库 - 使用事务确保原子性 */
 async function saveTranscriptionResults(
   fileId: number,
   data: TranscriptionResponse["data"],
@@ -150,7 +150,7 @@ async function saveTranscriptionResults(
     const processingTime = Date.now() - startTime;
     console.error(`❌ 转录结果保存失败 (文件ID: ${fileId}) - 耗时: ${processingTime}ms`, error);
 
-    // 尝试清理可能部分数据
+    // 尝试清理可能的部分数据
     try {
       await db.transaction("rw", db.transcripts, db.segments, async (tx) => {
         const transcripts = await tx.table("transcripts").where("fileId").equals(fileId).toArray();
@@ -170,7 +170,7 @@ async function saveTranscriptionResults(
   }
 }
 
-/** * 后ProcessTranscription结果 - TranslationTo用户母语*/
+/** * 后处理转录结果 - 翻译到用户母语 */
 async function postProcessTranscription(
   transcriptId: number,
   _fileId: number,
@@ -249,23 +249,25 @@ async function postProcessTranscription(
   }
 }
 
-/** * delay函数*/
+/** * 延时函数 */
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-/** * 判断Erroris否可重试*/
+/** * 判断错误是否可重试 */
 function isRetryableError(error: unknown): boolean {
   if (!(error instanceof Error)) return false;
   const message = error.message.toLowerCase();
-  // 网络Error、timeout、server临时Error可重试
+  // 网络错误、超时、服务器临时错误可重试
   return (
     message.includes("network") ||
     message.includes("timeout") ||
     message.includes("503") ||
     message.includes("502") ||
     message.includes("500") ||
-    message.includes("failed to fetch")
+    message.includes("failed to fetch") ||
+    message.includes("service unavailable") ||
+    message.includes("internal server error")
   );
 }
 
@@ -287,13 +289,13 @@ export function useTranscription() {
       maxRetries?: number;
       signal?: AbortSignal;
     }) => {
-      // Through DBUtils GetFile数据
+      // 通过 DBUtils 获取文件数据
       const file = await DBUtils.getFile(fileId);
       if (!file || !file.blob) {
         throw new Error("File not found or file data is corrupted");
       }
 
-      // 准备table单数据
+      // 准备请求数据
       const formData = new FormData();
       formData.append("audio", file.blob, file.name);
       formData.append("meta", JSON.stringify({ fileId: file.id?.toString() || "" }));
